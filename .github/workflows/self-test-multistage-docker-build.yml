@@ -17,4 +17,4 @@ jobs:
           repository: firehed/actions
           stages: env configured
           target_test: testenv
-          target_serer: server
+          target_server: server
