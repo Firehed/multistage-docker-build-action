@@ -1,0 +1,16 @@
+name: Self-test: Multistage docker build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./multistage-docker-build
+        with:
+          dockerfile: Foo

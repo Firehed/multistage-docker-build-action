@@ -1,0 +1,10 @@
+name: Multi-stage Docker Build
+description: Build Docker images to maximize layer caching and minimize build times
+inputs:
+  dockerfile:
+    description: Path to Dockerfile
+    required: false
+    default: Dockerfile
+runs:
+  using: node12
+  main: ../lib/multistage-docker-build.js

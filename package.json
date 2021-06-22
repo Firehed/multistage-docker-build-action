@@ -1,0 +1,21 @@
+{
+  "name": "actions",
+  "version": "0.0.1",
+  "description": "Github Actions",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": "https://github.com/firehed/actions",
+  "author": "Eric Stern <eric@ericstern.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@actions/core": "^1.4.0",
+    "@actions/exec": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.4",
+    "typescript": "^4.3.4"
+  }
+}
