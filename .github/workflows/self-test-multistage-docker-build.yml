@@ -1,4 +1,4 @@
-name: Self-test: Multistage docker build
+name: "Self-test: Multistage docker build"
 
 on:
   push:
