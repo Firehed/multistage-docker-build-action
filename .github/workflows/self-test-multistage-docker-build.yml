@@ -13,4 +13,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./multistage-docker-build
         with:
-          dockerfile: Foo
+          dockerfile: examples/Dockerfile
+          repository: firehed/actions
+          stages: env configured
+          target_test: testenv
+          target_serer: server

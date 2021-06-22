@@ -5,6 +5,20 @@ inputs:
     description: Path to Dockerfile
     required: false
     default: Dockerfile
+  repository:
+    required: true
+    description: Repository that all of the images and tags will pull from and push to
+  stages:
+    required: true
+    description: a comma-separated list of build stages
+  target_test:
+    required: true
+    description: Docker target for testing
+  target_server:
+    required: true
+    description: Docker target for server
+
+
 runs:
   using: node12
   main: ../lib/multistage-docker-build.js
