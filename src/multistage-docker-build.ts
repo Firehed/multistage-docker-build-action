@@ -37,6 +37,7 @@ async function build(): Promise<void> {
 
 async function buildStage(stage: string): Promise<string> {
   core.info(`Building stage ${stage}`)
+  await exec.exec('docker', ['images'])
 
   const repo = core.getInput('repository')
 
@@ -93,6 +94,7 @@ async function buildStage(stage: string): Promise<string> {
     core.info("TODO: docker push name:latest")
   }
 
+  await exec.exec('docker', ['images'])
   return targetTag
 }
 
