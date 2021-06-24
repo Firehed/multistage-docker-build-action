@@ -60,9 +60,11 @@ async function buildStage(stage: string): Promise<string> {
         image,
         stage,
       ])
+      // Don't pull fallback tags if pull succeeds
+      break
     } catch (error) {
       // Initial pull failing is OK
-      core.info(`Docker pull ${tag} failed`)
+      core.info(`Docker pull ${image} failed`)
     }
   }
 
@@ -107,13 +109,23 @@ async function dockerPush(tag: string): Promise<void> {
   }
 }
 
-async function tagCommit(branchTag: string): Promise<string> {
+async function tagCommit(maybeTaggedImage: string): Promise<string> {
   const hash = getFullCommitHash()
   core.info(`Commit hash: ${hash}`)
-  const commitTag = `${branchTag}:${hash}`
+  // Don't use a simple ":" split since registries can specify port
+  const segments = maybeTaggedImage.split('/')
+  const lastImageSegment = segments.pop()
+  if (lastImageSegment!.includes(':')) {
+    const segmentWithoutTag = lastImageSegment!.substring(0, lastImageSegment!.indexOf(':'))
+    segments.push(`${segmentWithoutTag}:${hash}`)
+  } else {
+    segments.push(`${lastImageSegment}:${hash}`)
+  }
+
+  const commitTag = segments.join('/')
   await exec.exec('docker', [
     'tag',
-    branchTag,
+    maybeTaggedImage,
     commitTag,
   ])
   return commitTag
