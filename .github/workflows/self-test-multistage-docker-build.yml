@@ -15,7 +15,7 @@ jobs:
         with:
           dockerfile: examples/Dockerfile
           # repository: firehed/actions
-          repository: gcr.io/firehed/actions
+          repository: ghcr.io/firehed/actions
           stages: env, configured
           target_test: testenv
           target_server: server
