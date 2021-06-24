@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Auth to GH registry
+        run: echo $GITHUB_TOKEN | docker login ghcr.io -u firehed --password-stdin
+
       - uses: ./multistage-docker-build
         with:
           dockerfile: examples/Dockerfile
