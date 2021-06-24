@@ -59,6 +59,7 @@ async function buildStage(stage: string): Promise<string> {
   core.debug(`Building ${tag}`)
   const result = await exec.exec('docker', [
     'build',
+    quiet,
     '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
     '--cache-from', stage,
     '--file', dockerfile,
