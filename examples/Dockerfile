@@ -1,4 +1,4 @@
-FROM alpine AS env
+FROM alpine:3.13 AS env
 WORKDIR app
 RUN apk add --update --no-cache icu-dev
 
