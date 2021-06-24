@@ -1,17 +1,19 @@
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
-import * as github from '@actions/github'
+
+import {
+  isDefaultBranch,
+  getFullCommitHash,
+  getTagForRun,
+} from './helpers'
 
 async function run(): Promise<void> {
   try {
-    // core.info(JSON.stringify(process.env))
-
     await build()
   } catch (error) {
     core.setFailed(error.message)
   }
 }
-
 
 async function build(): Promise<void> {
   const stages = core.getInput('stages').split(',').map(stage => stage.trim())
@@ -19,7 +21,7 @@ async function build(): Promise<void> {
     await buildStage(stage)
   }
 
-  // TODO: skip these build steps if included in stages
+  // TODO: refactor these, possibly parallelize
   const testStage = core.getInput('testenv-stage').trim()
   const testTagBranch = await buildStage(testStage)
   const testTag = await tagCommit(testTagBranch)
@@ -35,45 +37,61 @@ async function build(): Promise<void> {
 
 async function buildStage(stage: string): Promise<string> {
   core.info(`Building stage ${stage}`)
+
   const repo = core.getInput('repository')
-  const dockerfile = core.getInput('dockerfile')
+
+
   const quiet = core.getInput('quiet') ? '--quiet' : ''
 
-  // TODO: :this-branch || :default-branch
-  const tag = `${repo}/${stage}`
-  core.debug(`Pulling ${tag}`)
-  try {
-    await exec.exec('docker', [
-      'pull',
-      quiet,
-      tag,
-    ])
-    await exec.exec('docker', [
-      'tag',
-      tag,
-      stage,
-    ])
-  } catch (error) {
-    // Initial pull failing is OK
-    core.info(`Docker pull ${tag} failed`)
+  const name = `${repo}/${stage}`
+  const tagForRun = getTagForRun()
+  const tagsToTry = [tagForRun, 'latest']
+  for (const tag of tagsToTry) {
+    const image = `${name}:${tag}`
+    core.debug(`Pulling ${image}`)
+    try {
+      await exec.exec('docker', [
+        'pull',
+        quiet,
+        tag,
+      ])
+      await exec.exec('docker', [
+        'tag',
+        tag,
+        stage,
+      ])
+    } catch (error) {
+      // Initial pull failing is OK
+      core.info(`Docker pull ${tag} failed`)
+    }
   }
-  core.debug(`Building ${tag}`)
+
+  const dockerfile = core.getInput('dockerfile')
+
+  core.debug(`Building ${stage}`)
+
+  const targetTag = `${name}:${tagForRun}`
+
   const result = await exec.exec('docker', [
     'build',
     // quiet,
     '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
     '--cache-from', stage,
     '--file', dockerfile,
-    '--tag', tag,
+    '--tag', targetTag,
     '--target', stage,
     '.'
   ])
   if (result > 0) {
     throw 'Docker build failed'
   }
-  dockerPush(tag)
+  dockerPush(targetTag)
+  if (isDefaultBranch()) {
+    core.info("TODO: docker tag targetTag name:latest")
+    core.info("TODO: docker push name:latest")
+  }
 
-  return tag
+  return targetTag
 }
 
 async function dockerPush(tag: string): Promise<void> {
@@ -100,25 +118,5 @@ async function tagCommit(branchTag: string): Promise<string> {
   ])
   return commitTag
 }
-
-function getFullCommitHash(): string {
-  // Github runs actions triggered by PRs on a merge commit. This populates
-  // GITHUB_SHA and related fields with the merge commit hash, rather than the
-  // hash of the commit that triggered the PR.
-  //
-  // For many situations, that results in very confusing mismatches, especially
-  // when trying to use commit hashes for build targets
-
-  if (github.context.eventName !== 'pull_request') {
-    return github.context.sha
-  }
-
-  const prEvent = github.context.payload.pull_request as unknown as any
-
-  // core.info(JSON.stringify(prEvent))
-
-  return prEvent.head.sha
-}
-
 
 run()
