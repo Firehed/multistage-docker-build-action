@@ -3,7 +3,7 @@ import * as exec from '@actions/exec'
 
 async function run(): Promise<void> {
   try {
-    core.info(JSON.stringify(process.env))
+    // core.info(JSON.stringify(process.env))
 
     await build()
   } catch (error) {
