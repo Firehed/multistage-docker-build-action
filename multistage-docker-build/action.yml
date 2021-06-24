@@ -11,10 +11,10 @@ inputs:
   stages:
     required: true
     description: a comma-separated list of build stages
-  target_test:
+  testenv-stage:
     required: true
     description: Docker target for testing
-  target_server:
+  server-stage:
     required: true
     description: Docker target for server
 

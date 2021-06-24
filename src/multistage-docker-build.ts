@@ -18,10 +18,10 @@ async function build(): Promise<void> {
     await buildStage(stage)
   }
 
-  const testStage = core.getInput('target_test').trim()
+  const testStage = core.getInput('testenv-stage').trim()
   await buildStage(testStage)
 
-  const serverStage = core.getInput('target_server').trim()
+  const serverStage = core.getInput('server-stage').trim()
   await buildStage(serverStage)
 
   core.setOutput('testenv-tag', 'blah')
