@@ -38,5 +38,4 @@ jobs:
           docker run
             --rm
             ${{ steps.build.outputs.testenv-tag }}
-            --
             echo "I'm a test!"
