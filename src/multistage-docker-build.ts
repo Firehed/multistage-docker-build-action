@@ -47,7 +47,7 @@ async function buildStage(stage: string): Promise<string> {
   const name = `${repo}/${stage}`
   const tagForRun = getTagForRun()
   const tagsToTry = [tagForRun, 'latest']
-  let cacheImage = ''
+  // let cacheImage = ''
   for (const tag of tagsToTry) {
     const image = `${name}:${tag}`
     core.debug(`Pulling ${image}`)
@@ -57,7 +57,7 @@ async function buildStage(stage: string): Promise<string> {
         quiet,
         image,
       ])
-      cacheImage = image
+      // cacheImage = image
       // Don't pull fallback tags if pull succeeds
       break
     } catch (error) {
@@ -75,8 +75,8 @@ async function buildStage(stage: string): Promise<string> {
   const result = await exec.exec('docker', [
     'build',
     // quiet,
-    '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-    '--cache-from', cacheImage ? cacheImage : '""',
+    // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
+    // '--cache-from', cacheImage ? cacheImage : '""',
     '--file', dockerfile,
     '--tag', targetTag,
     '--target', stage,
