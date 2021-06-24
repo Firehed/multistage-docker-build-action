@@ -28,7 +28,7 @@ async function build(): Promise<void> {
   core.setOutput('server-tag', 'blah')
 }
 
-async function buildStage(stage: string): Promise<void> {
+async function buildStage(stage: string): Promise<string> {
   const repo = core.getInput('repository')
   const dockerfile = core.getInput('dockerfile')
 
@@ -69,6 +69,8 @@ async function buildStage(stage: string): Promise<void> {
   if (pushResult > 0) {
     throw 'Docker push failed'
   }
+
+  return tag
 }
 
 run()
