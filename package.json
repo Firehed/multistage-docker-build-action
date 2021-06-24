@@ -12,7 +12,8 @@
   "private": false,
   "dependencies": {
     "@actions/core": "^1.4.0",
-    "@actions/exec": "^1.1.0"
+    "@actions/exec": "^1.1.0",
+    "@actions/github": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^15.12.4",
