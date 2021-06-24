@@ -28,15 +28,19 @@ async function buildStage(stage: string): Promise<void> {
   // TODO: :this-branch || :default-branch
   const tag = `${repo}/${stage}`
   core.debug(`Pulling ${tag}`)
-  await exec.exec('docker', [
-    'pull',
-    tag,
-  ])
-  await exec.exec('docker', [
-    'tag',
-    tag,
-    stage,
-  ])
+  try {
+    await exec.exec('docker', [
+      'pull',
+      tag,
+    ])
+    await exec.exec('docker', [
+      'tag',
+      tag,
+      stage,
+    ])
+  } catch (error) {
+    // Initial pull failing is OK
+  }
   core.debug(`Building ${tag}`)
   const result = await exec.exec('docker', [
     'build',
