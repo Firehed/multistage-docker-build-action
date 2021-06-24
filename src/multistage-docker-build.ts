@@ -23,11 +23,11 @@ async function build(): Promise<void> {
   const testStage = core.getInput('testenv-stage').trim()
   const testTagBranch = await buildStage(testStage)
   const testTag = await tagCommit(testTagBranch)
-
+  await dockerPush(testTag)
   const serverStage = core.getInput('server-stage').trim()
   const serverTagBranch = await buildStage(serverStage)
   const serverTag = await tagCommit(serverTagBranch)
-  // TODO: push tagged variants
+  await dockerPush(serverTag)
 
   core.setOutput('testenv-tag', testTag)
   core.setOutput('server-tag', serverTag)
@@ -69,7 +69,14 @@ async function buildStage(stage: string): Promise<string> {
   if (result > 0) {
     throw 'Docker build failed'
   }
+  dockerPush(tag)
+
+  return tag
+}
+
+async function dockerPush(tag: string): Promise<void> {
   core.debug(`Pushing ${tag}`)
+  const quiet = core.getInput('quiet') ? '--quiet' : ''
   const pushResult = await exec.exec('docker', [
     'push',
     quiet,
@@ -78,14 +85,18 @@ async function buildStage(stage: string): Promise<string> {
   if (pushResult > 0) {
     throw 'Docker push failed'
   }
-
-  return tag
 }
 
 async function tagCommit(branchTag: string): Promise<string> {
   const hash = getFullCommitHash()
   core.info(`Commit hash: ${hash}`)
-  return `${branchTag}:${hash}`
+  const commitTag = `${branchTag}:${hash}`
+  await exec.exec('docker', [
+    'tag',
+    branchTag,
+    commitTag,
+  ])
+  return commitTag
 }
 
 function getFullCommitHash(): string {
