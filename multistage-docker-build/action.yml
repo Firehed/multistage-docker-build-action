@@ -18,6 +18,12 @@ inputs:
     required: true
     description: Docker target for server
 
+outputs:
+  testenv-tag:
+    description: Commit-specific tag for test env
+  server-tag:
+    description: Commit-specific tag for server
+
 
 runs:
   using: node12

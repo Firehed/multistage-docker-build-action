@@ -14,11 +14,18 @@ async function run(): Promise<void> {
 
 async function build(): Promise<void> {
   const stages = core.getInput('stages').split(',').map(stage => stage.trim())
-
   for (const stage of stages) {
     await buildStage(stage)
   }
-  // stages.forEach(awaitbuildStage)
+
+  const testStage = core.getInput('target_test').trim()
+  await buildStage(testStage)
+
+  const serverStage = core.getInput('target_server').trim()
+  await buildStage(serverStage)
+
+  core.setOutput('testenv-tag', 'blah')
+  core.setOutput('server-tag', 'blah')
 }
 
 async function buildStage(stage: string): Promise<void> {

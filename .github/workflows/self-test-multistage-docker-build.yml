@@ -23,6 +23,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ./multistage-docker-build
+        id: build
         with:
           dockerfile: examples/Dockerfile
           # repository: firehed/actions
@@ -31,3 +32,11 @@ jobs:
           stages: env, configured
           target_test: testenv
           target_server: server
+
+      - name: run tests
+        run:
+          docker run
+            --rm
+            -it ${{ steps.build.outputs.testenv-tag }}
+            --
+            echo "I'm a test!"
