@@ -7,7 +7,8 @@ on:
   pull_request:
 
 jobs:
-  selftest:
+  build:
+    name: Build docker images
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,6 +16,9 @@ jobs:
     env:
       DOCKER_BUILDKIT: ${{ matrix.buildkit }}
 
+    outputs:
+      testenv-tag: ${{ steps.build.outputs.testenv-tag }}
+      server-tag: ${{ steps.build.outputs.server-tag }}
     steps:
       - uses: actions/checkout@v2
 
@@ -42,9 +46,16 @@ jobs:
           testenv-stage: testenv
           server-stage: server
 
+  test:
+    name: 'test'
+    needs:
+      - build
+    steps:
       - name: run tests
         run:
           docker run
             --rm
-            ${{ steps.build.outputs.testenv-tag }}
+            ${{ needs.build.outputs.testenv-tag }}
             echo "I'm a test!"
+      - name: display server
+        run: echo ${{ needs.build.outputs.server-tag }}
