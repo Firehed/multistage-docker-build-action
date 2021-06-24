@@ -3,7 +3,7 @@ import * as github from '@actions/github'
 // Returns a string like "refs_pull_1_merge-bk1"
 export function getTagForRun(): string {
   const usingBuildkit = process.env.DOCKER_BUILDKIT === '1'
-  const tagFriendlyRef = process.env.GITHUB_REF?.replace('/', '_')
+  const tagFriendlyRef = process.env.GITHUB_REF?.replace(/\//g, '_')
 
   return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`
 }
