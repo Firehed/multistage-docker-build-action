@@ -18,8 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # - name: Dump context
-      #   uses: crazy-max/ghaction-dump-context@v1
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@v1
 
       - name: Auth to GH registry
         uses: docker/login-action@v1
