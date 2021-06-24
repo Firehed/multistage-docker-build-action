@@ -18,5 +18,8 @@ jobs:
       - name: Print context
         uses: crazy-max/ghaction-dump-context@v1
 
+      - run: git cat-file -p $GITHUB_SHA
+      - run: git show --no-patch --format="%P" $GITHUB_SHA
+
       - name: PR info
         run: echo ${{ github.event.pull_request.head.sha }}
