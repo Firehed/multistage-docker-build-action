@@ -17,6 +17,10 @@ inputs:
   server-stage:
     required: true
     description: Docker target for server
+  quiet:
+    required: false
+    default: true
+    description: Send `--quiet` flag to docker commands
 
 outputs:
   testenv-tag:

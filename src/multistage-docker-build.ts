@@ -19,6 +19,7 @@ async function build(): Promise<void> {
     await buildStage(stage)
   }
 
+  // TODO: skip these build steps if included in stages
   const testStage = core.getInput('testenv-stage').trim()
   const testTagBranch = await buildStage(testStage)
   const testTag = await tagCommit(testTagBranch)
@@ -26,14 +27,17 @@ async function build(): Promise<void> {
   const serverStage = core.getInput('server-stage').trim()
   const serverTagBranch = await buildStage(serverStage)
   const serverTag = await tagCommit(serverTagBranch)
+  // TODO: push tagged variants
 
   core.setOutput('testenv-tag', testTag)
   core.setOutput('server-tag', serverTag)
 }
 
 async function buildStage(stage: string): Promise<string> {
+  core.info(`Building stage ${stage}`)
   const repo = core.getInput('repository')
   const dockerfile = core.getInput('dockerfile')
+  const quiet = core.getInput('quiet') ? '--quiet' : ''
 
   // TODO: :this-branch || :default-branch
   const tag = `${repo}/${stage}`
@@ -41,6 +45,7 @@ async function buildStage(stage: string): Promise<string> {
   try {
     await exec.exec('docker', [
       'pull',
+      quiet,
       tag,
     ])
     await exec.exec('docker', [
@@ -67,6 +72,7 @@ async function buildStage(stage: string): Promise<string> {
   core.debug(`Pushing ${tag}`)
   const pushResult = await exec.exec('docker', [
     'push',
+    quiet,
     tag,
   ])
   if (pushResult > 0) {
@@ -77,20 +83,14 @@ async function buildStage(stage: string): Promise<string> {
 }
 
 async function tagCommit(branchTag: string): Promise<string> {
-  await exec.exec('git log --pretty=oneline')
-  await exec.exec('git rev-parse HEAD')
-  // FIXME: if above is not a merge commit (for the goofy ci thing), use it.
-  // otherwise track down real commit and splice that in
-
   const hash = getFullCommitHash()
-  core.info(hash)
-
-  return branchTag
+  core.info(`Commit hash: ${hash}`)
+  return `${branchTag}:${hash}`
 }
 
 function getFullCommitHash(): string {
   // Github runs actions triggered by PRs on a merge commit. This populates
-  // GITHUB_SHA and realted fields with the merge commit hash, rather than the
+  // GITHUB_SHA and related fields with the merge commit hash, rather than the
   // hash of the commit that triggered the PR.
   //
   // For many situations, that results in very confusing mismatches, especially
@@ -102,7 +102,7 @@ function getFullCommitHash(): string {
 
   const prEvent = github.context.payload.pull_request as unknown as any
 
-  core.info(JSON.stringify(prEvent))
+  // core.info(JSON.stringify(prEvent))
 
   return prEvent.head.sha
 }
