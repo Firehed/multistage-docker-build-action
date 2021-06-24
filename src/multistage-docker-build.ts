@@ -19,13 +19,15 @@ async function build(): Promise<void> {
   }
 
   const testStage = core.getInput('testenv-stage').trim()
-  await buildStage(testStage)
+  const testTagBranch = await buildStage(testStage)
+  const testTag = await tagCommit(testTagBranch)
 
   const serverStage = core.getInput('server-stage').trim()
-  await buildStage(serverStage)
+  const serverTagBranch = await buildStage(serverStage)
+  const serverTag = await tagCommit(serverTagBranch)
 
-  core.setOutput('testenv-tag', 'blah')
-  core.setOutput('server-tag', 'blah')
+  core.setOutput('testenv-tag', testTag)
+  core.setOutput('server-tag', serverTag)
 }
 
 async function buildStage(stage: string): Promise<string> {
@@ -71,6 +73,14 @@ async function buildStage(stage: string): Promise<string> {
   }
 
   return tag
+}
+
+async function tagCommit(branchTag: string): Promise<string> {
+  await exec.exec('git log --pretty=oneline')
+  await exec.exec('git rev-parse HEAD')
+  // FIXME: if above is not a merge commit (for the goofy ci thing), use it.
+  // otherwise track down real commit and splice that in
+  return branchTag
 }
 
 run()
