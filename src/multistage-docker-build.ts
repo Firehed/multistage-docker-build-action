@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
+import * as github from '@actions/github'
 
 async function run(): Promise<void> {
   try {
@@ -80,7 +81,31 @@ async function tagCommit(branchTag: string): Promise<string> {
   await exec.exec('git rev-parse HEAD')
   // FIXME: if above is not a merge commit (for the goofy ci thing), use it.
   // otherwise track down real commit and splice that in
+
+  const hash = getFullCommitHash()
+  core.info(hash)
+
   return branchTag
 }
+
+function getFullCommitHash(): string {
+  // Github runs actions triggered by PRs on a merge commit. This populates
+  // GITHUB_SHA and realted fields with the merge commit hash, rather than the
+  // hash of the commit that triggered the PR.
+  //
+  // For many situations, that results in very confusing mismatches, especially
+  // when trying to use commit hashes for build targets
+
+  if (github.context.eventName !== 'pull_request') {
+    return github.context.sha
+  }
+
+  const prEvent = github.context.payload.pull_request as unknown as any
+
+  core.info(JSON.stringify(prEvent))
+
+  return prEvent.head.sha
+}
+
 
 run()
