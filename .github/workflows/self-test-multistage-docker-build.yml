@@ -14,7 +14,8 @@ jobs:
       - uses: ./multistage-docker-build
         with:
           dockerfile: examples/Dockerfile
-          repository: firehed/actions
+          # repository: firehed/actions
+          repository: ghcr.io/firehed/actions
           stages: env configured
           target_test: testenv
           target_server: server
