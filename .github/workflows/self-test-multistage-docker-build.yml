@@ -9,6 +9,12 @@ on:
 jobs:
   selftest:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        buildkit: ["0", "1"]
+    env:
+      DOCKER_BUILDKIT: ${{ matrix.buildkit }}
+
     steps:
       - uses: actions/checkout@v2
 
