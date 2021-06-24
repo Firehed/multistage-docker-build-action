@@ -5,6 +5,8 @@ import {
   isDefaultBranch,
   getFullCommitHash,
   getTagForRun,
+  getBaseStages,
+  getAllStages,
 } from './helpers'
 
 async function run(): Promise<void> {
@@ -16,7 +18,7 @@ async function run(): Promise<void> {
 }
 
 async function build(): Promise<void> {
-  const stages = core.getInput('stages').split(',').map(stage => stage.trim())
+  const stages = getBaseStages()
   for (const stage of stages) {
     await buildStage(stage)
   }
@@ -72,11 +74,14 @@ async function buildStage(stage: string): Promise<string> {
 
   const targetTag = `${name}:${tagForRun}`
 
+  const cacheFrom = Array.from(getAllPossibleCacheTargets())
+    .flatMap(target => ['--cache-from', target])
   const result = await exec.exec('docker', [
     'build',
     // quiet,
     // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
     // '--cache-from', cacheImage ? cacheImage : '""',
+    ...cacheFrom,
     '--file', dockerfile,
     '--tag', targetTag,
     '--target', stage,
@@ -129,5 +134,17 @@ async function tagCommit(maybeTaggedImage: string): Promise<string> {
   ])
   return commitTag
 }
+
+function getAllPossibleCacheTargets(): Set<string> {
+  const tags = [getTagForRun(), 'latest']
+  const stages = getAllStages()
+  const repo = core.getInput('repository')
+
+  const out = stages.map(stage => `${repo}/${stage}`)
+    .flatMap(image => tags.map(tag => `${image}:${tag}`))
+
+  return new Set(out)
+}
+
 
 run()

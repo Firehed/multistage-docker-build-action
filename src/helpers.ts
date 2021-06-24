@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as github from '@actions/github'
 
 // Returns a string like "refs_pull_1_merge-bk1"
@@ -28,4 +29,16 @@ export function getFullCommitHash(): string {
 
   const prEvent = github.context.payload.pull_request as unknown as any
   return prEvent.head.sha
+}
+
+export function getBaseStages(): string[] {
+  return core.getInput('stages').split(',').map(stage => stage.trim())
+}
+
+export function getAllStages(): string[] {
+  return [
+    ...getBaseStages(),
+    core.getInput('testenv-stage').trim(),
+    core.getInput('testenv-stage').trim(),
+  ]
 }
