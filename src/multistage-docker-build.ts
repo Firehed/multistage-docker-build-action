@@ -53,11 +53,11 @@ async function buildStage(stage: string): Promise<string> {
       await exec.exec('docker', [
         'pull',
         quiet,
-        tag,
+        image,
       ])
       await exec.exec('docker', [
         'tag',
-        tag,
+        image,
         stage,
       ])
     } catch (error) {
