@@ -55,6 +55,7 @@ async function buildStage(stage: string): Promise<string> {
     ])
   } catch (error) {
     // Initial pull failing is OK
+    core.info(`Docker pull ${tag} failed`)
   }
   core.debug(`Building ${tag}`)
   const result = await exec.exec('docker', [
