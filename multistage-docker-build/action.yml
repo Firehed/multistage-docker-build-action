@@ -23,10 +23,12 @@ inputs:
     description: Send `--quiet` flag to docker commands
 
 outputs:
-  testenv-tag:
-    description: Commit-specific tag for test env
+  commit:
+    description: The full commit hash used for tags
   server-tag:
     description: Commit-specific tag for server
+  testenv-tag:
+    description: Commit-specific tag for test env
 
 
 runs:

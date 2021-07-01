@@ -33,8 +33,9 @@ async function build(): Promise<void> {
   const serverTag = await tagCommit(serverTagBranch)
   await dockerPush(serverTag)
 
-  core.setOutput('testenv-tag', testTag)
+  core.setOutput('commit', getFullCommitHash())
   core.setOutput('server-tag', serverTag)
+  core.setOutput('testenv-tag', testTag)
 }
 
 async function buildStage(stage: string): Promise<string> {
