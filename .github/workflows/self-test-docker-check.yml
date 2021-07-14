@@ -22,6 +22,6 @@ jobs:
         with:
           name: 'Some check name'
           token: ${{ secrets.GITHUB_TOKEN }}
-          image: alpine
+          image: alpine:latest
           command: ls -la
           # flags: --volume "$PWD/coverage:/coverage"
