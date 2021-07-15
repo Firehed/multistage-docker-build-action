@@ -11,11 +11,11 @@ async function run(): Promise<void> {
     core.info('before build')
     await build()
     core.info('after build')
-    updateCheck(checkId, 'success')
+    await updateCheck(checkId, 'success')
     core.info('after update check success')
   } catch (error) {
     core.info('error before update')
-    updateCheck(checkId, 'failure')
+    await updateCheck(checkId, 'failure')
     core.info('after update check fail')
     core.setFailed(error.message)
   }
