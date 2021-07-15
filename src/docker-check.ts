@@ -79,7 +79,7 @@ async function build() {
 }
 
 async function entrypoint(): Promise<void> {
-  core.info(JSON.stringify(process.env))
+  core.info(JSON.stringify(process.env, null, '  '))
   process.env['STATE_test'] = 'yes'
 }
 
