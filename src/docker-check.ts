@@ -58,6 +58,7 @@ async function updateCheck(checkId: number, conclusion: Conclusion): Promise<voi
   const updateParams = {
     check_run_id: checkId,
     conclusion,
+    status: 'completed',
   }
   await ok.rest.checks.update(updateParams)
 }
