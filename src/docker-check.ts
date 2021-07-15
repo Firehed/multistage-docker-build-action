@@ -4,7 +4,7 @@ import * as github from '@actions/github'
 
 import { getFullCommitHash } from './helpers'
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   const checkId = await createCheck()
   core.info(`Check ID ${checkId}`)
   try {
@@ -15,6 +15,7 @@ async function run(): Promise<void> {
     core.info('after update check success')
   } catch (error) {
     core.info('error before update')
+    // convert to follow up
     await updateCheck(checkId, 'failure')
     core.info('after update check fail')
     core.setFailed(error.message)
@@ -22,28 +23,18 @@ async function run(): Promise<void> {
 }
 
 async function createCheck(): Promise<number> {
-
+  // https://docs.github.com/en/rest/reference/checks#create-a-check-run
   const token = core.getInput('token')
   const name = core.getInput('name')
   const ok = github.getOctokit(token)
 
-  // https://docs.github.com/en/rest/reference/checks#create-a-check-run
   const createParams = {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     name,
     head_sha: getFullCommitHash(),
-    // started_at = now?
   }
   const check = await ok.rest.checks.create(createParams)
-
-  // hacky/testy
-  const cs = await ok.rest.checks.createSuite({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    head_sha: getFullCommitHash(),
-  })
-  core.info(JSON.stringify(cs))
   return check.data.id
 }
 
@@ -58,11 +49,10 @@ type Conclusion =
   | 'timed_out'
 
 async function updateCheck(checkId: number, conclusion: Conclusion): Promise<void> {
+  // https://docs.github.com/en/rest/reference/checks#update-a-check-run
   core.info(`Updating check ${checkId} to ${conclusion}`)
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
-  // https://docs.github.com/en/rest/reference/checks#update-a-check-run
-  //
   const updateParams = {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -88,4 +78,9 @@ async function build() {
   ])
 }
 
-run()
+async function entrypoint(): Promise<void> {
+  core.info(JSON.stringify(process.env))
+  process.env['STATE_test'] = 'yes'
+}
+
+entrypoint()
