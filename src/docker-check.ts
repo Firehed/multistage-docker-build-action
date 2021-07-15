@@ -6,11 +6,17 @@ import { getFullCommitHash } from './helpers'
 
 async function run(): Promise<void> {
   const checkId = await createCheck()
+  core.info(`Check ID ${checkId}`)
   try {
+    core.info('before build')
     await build()
+    core.info('after build')
     updateCheck(checkId, 'success')
+    core.info('after update check success')
   } catch (error) {
+    core.info('error before update')
     updateCheck(checkId, 'failure')
+    core.info('after update check fail')
     core.setFailed(error.message)
   }
 }
