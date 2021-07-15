@@ -50,6 +50,7 @@ type Conclusion =
   | 'timed_out'
 
 async function updateCheck(checkId: number, conclusion: Conclusion): Promise<void> {
+  core.info(`Updating check ${checkId} to ${conclusion}`)
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
   // https://docs.github.com/en/rest/reference/checks#update-a-check-run
