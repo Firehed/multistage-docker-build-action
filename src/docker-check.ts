@@ -36,6 +36,14 @@ async function createCheck(): Promise<number> {
     // started_at = now?
   }
   const check = await ok.rest.checks.create(createParams)
+
+  // hacky/testy
+  const cs = await ok.rest.checks.createSuite({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    head_sha: getFullCommitHash(),
+  })
+  core.info(JSON.stringify(cs))
   return check.data.id
 }
 
