@@ -4,7 +4,7 @@ import * as github from '@actions/github'
 
 import { getFullCommitHash } from './helpers'
 
-export async function run(): Promise<void> {
+async function run(): Promise<void> {
   const checkId = await createCheck()
   core.info(`Check ID ${checkId}`)
   try {
@@ -69,21 +69,7 @@ async function build() {
   const command = core.getInput('command')
   // const flags = core.getInput('flags').split(' ').map(flag => flag.trim())
   const flags = core.getInput('flags')
-  await exec.exec('docker', [
-    'run',
-    '--rm',
-    flags,
-    image,
-    command,
-  ])
+  await exec.exec(`docker run --rm ${flags} ${image} ${command}`)
 }
 
-async function entrypoint(): Promise<void> {
-  // core.info(JSON.stringify(process.env, null, '  '))
-  core.info(!!process.env['STATE_isPre'] ? 'pre' : 'not pre')
-  core.info(!!process.env['STATE_isPost'] ? 'post' : 'not post')
-  core.info(process.env['STATE_test'] || 'no test value')
-  process.env['STATE_test'] = 'yes'
-}
-
-entrypoint()
+run()
