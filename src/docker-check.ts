@@ -64,6 +64,8 @@ async function updateCheck(checkId: number, conclusion: Conclusion): Promise<voi
   // https://docs.github.com/en/rest/reference/checks#update-a-check-run
   //
   const updateParams = {
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
     check_run_id: checkId,
     conclusion,
     status: 'completed',
