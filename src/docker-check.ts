@@ -5,11 +5,12 @@ import * as github from '@actions/github'
 import { getFullCommitHash } from './helpers'
 
 async function run(): Promise<void> {
+  const checkId = await createCheck()
   try {
-    const checkId = await createCheck()
     await build()
-    updateCheck(checkId)
+    updateCheck(checkId, 'success')
   } catch (error) {
+    updateCheck(checkId, 'failure')
     core.setFailed(error.message)
   }
 }
@@ -32,15 +33,24 @@ async function createCheck(): Promise<number> {
   return check.data.id
 }
 
-async function updateCheck(checkId: number): Promise<void> {
+type Conclusion =
+  | 'action_required'
+  | 'cancelled'
+  | 'failure'
+  | 'neutral'
+  | 'success'
+  | 'skipped'
+  | 'stale'
+  | 'timed_out'
+
+async function updateCheck(checkId: number, conclusion: Conclusion): Promise<void> {
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
   // https://docs.github.com/en/rest/reference/checks#update-a-check-run
   //
   const updateParams = {
     check_run_id: checkId,
-    conclusion: 'neutral',
-    // conclusion: ". Can be one of action_required, cancelled, failure, neutral, success, skipped, stale, or timed_out."
+    conclusion,
   }
   await ok.rest.checks.update(updateParams)
 }
