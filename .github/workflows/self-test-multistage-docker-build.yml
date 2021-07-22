@@ -13,6 +13,10 @@ jobs:
     strategy:
       matrix:
         buildkit: ["0", "1"]
+        repository:
+          - ghcr.io/firehed/actions
+          - firehedgha/multistage-docker-build
+          # GCR, others?
     env:
       DOCKER_BUILDKIT: ${{ matrix.buildkit }}
 
@@ -29,6 +33,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Auth to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: firehedgha
+          password: ${{ secrets.DOCKER_HUB_PAT }}
+
       - name: generate file change
         run: echo $GITHUB_SHA > file.txt
 
@@ -36,9 +46,7 @@ jobs:
         id: build
         with:
           dockerfile: examples/Dockerfile
-          # repository: firehed/actions
-          # repository: gcr.io/firehed/actions
-          repository: ghcr.io/firehed/actions
+          repository: ${{ matrix.repository }}
           stages: env, configured
           testenv-stage: testenv
           server-stage: server
