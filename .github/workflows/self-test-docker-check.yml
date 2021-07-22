@@ -7,16 +7,19 @@ on:
   pull_request:
 
 jobs:
-  run-docker:
-    name: Run docker
+  self-test:
+    name: Self-test Docker Check action
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
 
+      - name: Make mountable directory
+        run: mkdir coverage
+
       - uses: ./docker-check
         with:
-          name: 'Run ls'
+          name: 'Run `ls` from docker-check action'
           token: ${{ secrets.GITHUB_TOKEN }}
           image: alpine:latest
           command: ls
