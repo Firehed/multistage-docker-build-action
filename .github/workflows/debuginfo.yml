@@ -1,0 +1,26 @@
+name: Debug info
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  show:
+    name: Show info
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: GITHUB_SHA
+        run: echo $GITHUB_SHA
+
+      - name: Print context
+        uses: crazy-max/ghaction-dump-context@v1
+
+      - name: PR info
+        run: echo ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/checkout@v2
+      - run: git cat-file -p $GITHUB_SHA
+      - run: git show --no-patch --format="%P" $GITHUB_SHA

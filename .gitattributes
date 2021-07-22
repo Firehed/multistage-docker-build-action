@@ -1,1 +1,2 @@
-lib/*.js linguist-generated=true
+**/*.js linguist-generated
+yarn.lock linguist-generated
