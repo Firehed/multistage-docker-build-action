@@ -6,18 +6,18 @@ import { getFullCommitHash } from './helpers'
 
 async function run(): Promise<void> {
   const checkId = await createCheck()
-  core.info(`Check ID ${checkId}`)
+  core.debug(`Check ID ${checkId}`)
   try {
-    core.info('before build')
+    core.debug('before build')
     await build()
-    core.info('after build')
+    core.debug('after build')
     await updateCheck(checkId, 'success')
-    core.info('after update check success')
+    core.debug('after update check success')
   } catch (error) {
-    core.info('error before update')
+    core.debug('error before update')
     // convert to follow up
     await updateCheck(checkId, 'failure')
-    core.info('after update check fail')
+    core.debug('after update check fail')
     core.setFailed(error.message)
   }
 }
@@ -50,7 +50,7 @@ type Conclusion =
 
 async function updateCheck(checkId: number, conclusion: Conclusion): Promise<void> {
   // https://docs.github.com/en/rest/reference/checks#update-a-check-run
-  core.info(`Updating check ${checkId} to ${conclusion}`)
+  core.debug(`Updating check ${checkId} to ${conclusion}`)
   const token = core.getInput('token')
   const ok = github.getOctokit(token)
   const updateParams = {

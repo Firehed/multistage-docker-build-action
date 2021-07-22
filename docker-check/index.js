@@ -7641,19 +7641,19 @@ function getAllStages() {
 
 async function run() {
     const checkId = await createCheck();
-    lib_core.info(`Check ID ${checkId}`);
+    lib_core.debug(`Check ID ${checkId}`);
     try {
-        lib_core.info('before build');
+        lib_core.debug('before build');
         await build();
-        lib_core.info('after build');
+        lib_core.debug('after build');
         await updateCheck(checkId, 'success');
-        lib_core.info('after update check success');
+        lib_core.debug('after update check success');
     }
     catch (error) {
-        lib_core.info('error before update');
+        lib_core.debug('error before update');
         // convert to follow up
         await updateCheck(checkId, 'failure');
-        lib_core.info('after update check fail');
+        lib_core.debug('after update check fail');
         lib_core.setFailed(error.message);
     }
 }
@@ -7673,7 +7673,7 @@ async function createCheck() {
 }
 async function updateCheck(checkId, conclusion) {
     // https://docs.github.com/en/rest/reference/checks#update-a-check-run
-    lib_core.info(`Updating check ${checkId} to ${conclusion}`);
+    lib_core.debug(`Updating check ${checkId} to ${conclusion}`);
     const token = lib_core.getInput('token');
     const ok = lib_github.getOctokit(token);
     const updateParams = {
