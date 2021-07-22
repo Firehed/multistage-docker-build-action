@@ -11,6 +11,7 @@ jobs:
     name: Build docker images
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         buildkit: ["0", "1"]
         repository:
