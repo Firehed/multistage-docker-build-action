@@ -19,7 +19,7 @@ inputs:
 
 runs:
   using: node12
-  main: ../lib/docker-check.js
+  main: index.js
 
   # pre: ../lib/docker-check.js
   # post: ../lib/docker-check.js

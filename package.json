@@ -4,7 +4,9 @@
   "description": "Github Actions",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build-multistage-docker-build": "ncc build src/multistage-docker-build.ts -o multistage-docker-build",
+    "build-docker-check": "ncc build src/docker-check.ts -o docker-check",
+    "build": "yarn run build-multistage-docker-build && yarn run build-docker-check"
   },
   "repository": "https://github.com/firehed/actions",
   "author": "Eric Stern <eric@ericstern.com>",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@types/node": "^15.12.4",
+    "@vercel/ncc": "^0.29.0",
     "typescript": "^4.3.4"
   }
 }

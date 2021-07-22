@@ -33,4 +33,4 @@ outputs:
 
 runs:
   using: node12
-  main: ../lib/multistage-docker-build.js
+  main: index.js
