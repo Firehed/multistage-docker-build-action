@@ -22,5 +22,5 @@ jobs:
           name: 'Run `ls` from docker-check action'
           token: ${{ secrets.GITHUB_TOKEN }}
           image: alpine:latest
-          flags: --volume "$PWD/coverage:/coverage"
+          flags: --volume $PWD/coverage:/coverage
           command: ls
