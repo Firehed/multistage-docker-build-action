@@ -20,6 +20,3 @@ inputs:
 runs:
   using: node12
   main: index.js
-
-  # pre: ../lib/docker-check.js
-  # post: ../lib/docker-check.js

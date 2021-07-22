@@ -6,9 +6,6 @@ on:
       - main
   pull_request:
 
-    # matrix build for selftest
-    # build stages
-    # quiet
 jobs:
   run-docker:
     name: Run docker
@@ -18,10 +15,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: ./docker-check
-        id: build
         with:
-          name: 'Some check name'
+          name: 'Run ls'
           token: ${{ secrets.GITHUB_TOKEN }}
           image: alpine:latest
-          command: lllls -la
-          # flags: --volume "$PWD/coverage:/coverage"
+          command: ls
+          flags: --volume "$PWD/coverage:/coverage"
