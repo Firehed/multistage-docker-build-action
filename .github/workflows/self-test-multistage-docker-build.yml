@@ -1,0 +1,59 @@
+name: "Self-test: Multistage docker build"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Build docker images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        buildkit: ["0", "1"]
+    env:
+      DOCKER_BUILDKIT: ${{ matrix.buildkit }}
+
+    outputs:
+      testenv-tag: ${{ steps.build.outputs.testenv-tag }}
+      server-tag: ${{ steps.build.outputs.server-tag }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Auth to GH registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: generate file change
+        run: echo $GITHUB_SHA > file.txt
+
+      - uses: ./multistage-docker-build
+        id: build
+        with:
+          dockerfile: examples/Dockerfile
+          # repository: firehed/actions
+          # repository: gcr.io/firehed/actions
+          repository: ghcr.io/firehed/actions
+          stages: env, configured
+          testenv-stage: testenv
+          server-stage: server
+
+  test:
+    name: 'test'
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: run tests
+        run:
+          docker run
+            --rm
+            ${{ needs.build.outputs.testenv-tag }}
+            echo "I'm a test!"
+      - name: display server
+        run: echo ${{ needs.build.outputs.server-tag }}

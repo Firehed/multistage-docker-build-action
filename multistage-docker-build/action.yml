@@ -1,0 +1,36 @@
+name: Multi-stage Docker Build
+description: Build Docker images to maximize layer caching and minimize build times
+inputs:
+  dockerfile:
+    description: Path to Dockerfile
+    required: false
+    default: Dockerfile
+  repository:
+    required: true
+    description: Repository that all of the images and tags will pull from and push to
+  stages:
+    required: true
+    description: a comma-separated list of build stages
+  testenv-stage:
+    required: true
+    description: Docker target for testing
+  server-stage:
+    required: true
+    description: Docker target for server
+  quiet:
+    required: false
+    default: true
+    description: Send `--quiet` flag to docker commands
+
+outputs:
+  commit:
+    description: The full commit hash used for tags
+  server-tag:
+    description: Commit-specific tag for server
+  testenv-tag:
+    description: Commit-specific tag for test env
+
+
+runs:
+  using: node12
+  main: index.js
