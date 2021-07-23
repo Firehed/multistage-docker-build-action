@@ -7634,7 +7634,7 @@ function getAllStages() {
     ];
 }
 
-;// CONCATENATED MODULE: ./src/multistage-docker-build.ts
+;// CONCATENATED MODULE: ./src/index.ts
 
 
 

@@ -32,7 +32,7 @@ jobs:
       - name: generate file change
         run: echo $GITHUB_SHA > file.txt
 
-      - uses: ./multistage-docker-build
+      - uses: ./
         id: build
         with:
           dockerfile: examples/Dockerfile
