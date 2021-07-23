@@ -1,10 +1,10 @@
 {
-  "name": "actions",
+  "name": "multistage-docker-build-action",
   "version": "0.0.1",
   "description": "Github Actions",
   "main": "index.js",
   "scripts": {
-    "build-multistage-docker-build": "ncc build src/multistage-docker-build.ts -o multistage-docker-build",
+    "build-multistage-docker-build": "ncc build src/index.ts",
     "build": "yarn run build-multistage-docker-build"
   },
   "repository": "https://github.com/firehed/actions",

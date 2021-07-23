@@ -1,2 +1,2 @@
-**/*.js linguist-generated
+dist/index.js linguist-generated
 yarn.lock linguist-generated
