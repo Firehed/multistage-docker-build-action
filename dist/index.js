@@ -7697,7 +7697,7 @@ async function buildStage(stage) {
         .flatMap(target => ['--cache-from', target]);
     const result = await exec.exec('docker', [
         'build',
-        // quiet,
+        quiet,
         // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
         // '--cache-from', cacheImage ? cacheImage : '""',
         ...cacheFrom,
