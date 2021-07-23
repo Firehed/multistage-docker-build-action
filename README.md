@@ -1,14 +1,15 @@
-# Build tools for Github Actions
-
-## Multistage docker build
+# Multistage Docker Build Action
 
 This action is designed to perform multistage Docker builds in a straightforward and fast way.
-As it turns out, this is surprisingly difficult to do well in CI, since the host machine performing the build typically starts in a clean slate each time, which means most of the layer caching used by Docker becomes moot. Trying to use Github's `actions/cache` to work around this can be quite challenging, and manually dealing with each stage in the build requires a lot of repetition in the Action YAML.
+As it turns out, this is surprisingly difficult to do well in CI, since the host machine performing the build typically starts in a clean slate each time, which means most of the layer caching used by Docker becomes moot.
+Trying to use Github's `actions/cache` to work around this can be quite challenging, and manually dealing with each stage in the build requires a lot of repetition in the Action YAML.
 
-The inputs to this action allow you to specify the various build stage names as cache targets that will be created and pushed to the registry for future re-use. Each stage will be tagged using the branch name and full commit hash. While the initial build will, of course, be performed from scratch, subsequent builds will pull the previously-built images that the layer caching can use.
+The inputs to this action allow you to specify the various build stage names as cache targets that will be created and pushed to the registry for future re-use.
+Each stage will be tagged using the branch name and full commit hash.
+While the initial build will, of course, be performed from scratch, subsequent builds will pull the previously-built images that the layer caching can use.
 
 
-### Inputs
+## Inputs
 
 | Input | Required | Default | Description |
 |---|---|---|---|
@@ -19,7 +20,7 @@ The inputs to this action allow you to specify the various build stage names as 
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
 
-### Outputs
+## Outputs
 
 | Output | Description |
 |---|---|
@@ -27,7 +28,7 @@ The inputs to this action allow you to specify the various build stage names as 
 | `server-tag` | Commit-specific tag for server |
 | `testenv-tag` | Commit-specific tag for test env |
 
-### Example
+## Example
 
 The following Actions workflow file will:
 
@@ -59,7 +60,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: firehed/actions/multistage-docker-build@v1
+      - uses: firehed/multistage-docker-build-action@v1
         id: build
         with:
           dockerfile: examples/Dockerfile
@@ -88,7 +89,7 @@ The following images will exist:
 
 The intended use-case is that the `testenv` will be used for further testing in CI, and the `server` will eventually be deployed. You may want remove the intermediate branch images when the branch is closed to save on storage.
 
-### Known issues/Future features
+## Known issues/Future features
 
 - Use with Docker Buildkit (via `DOCKER_BUILDKIT=1`) does not consistently use the layer caches.
   This seems to be a Buildkit issue.
