@@ -1,5 +1,9 @@
 name: Multi-stage Docker Build
+
+author: Eric Stern
+
 description: Build Docker images to maximize layer caching and minimize build times
+
 inputs:
   dockerfile:
     description: Path to Dockerfile
@@ -30,6 +34,9 @@ outputs:
   testenv-tag:
     description: Commit-specific tag for test env
 
+branding:
+  color: blue
+  icon: package
 
 runs:
   using: node12
