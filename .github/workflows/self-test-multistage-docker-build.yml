@@ -57,3 +57,31 @@ jobs:
             echo "I'm a test!"
       - name: display server
         run: echo ${{ needs.build.outputs.server-tag }}
+
+  build-server-only:
+    name: Build server image only
+    runs-on: ubunti-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # - name: Auth to GH registry
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./
+        id: build
+        with:
+          dockerfile: examples/Dockerfile
+          # repository: firehed/actions
+          # repository: gcr.io/firehed/actions
+          repository: ghcr.io/firehed/actions
+          stages: env, configured
+          server-stage: server
+
+      - name: Print outputs
+        run: |
+          echo "Server: ${{ steps.build.outputs.server-tag }}"
+          echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
