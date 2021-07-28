@@ -25,9 +25,15 @@ async function build(): Promise<void> {
 
   // TODO: refactor these, possibly parallelize
   const testStage = core.getInput('testenv-stage').trim()
-  const testTagBranch = await buildStage(testStage)
-  const testTag = await tagCommit(testTagBranch)
-  await dockerPush(testTag)
+  if (testStage === '') {
+    core.info('testenv-stage not set; skipping build')
+  } else {
+    const testTagBranch = await buildStage(testStage)
+    const testTag = await tagCommit(testTagBranch)
+    await dockerPush(testTag)
+    core.setOutput('testenv-tag', testTag)
+  }
+
   const serverStage = core.getInput('server-stage').trim()
   const serverTagBranch = await buildStage(serverStage)
   const serverTag = await tagCommit(serverTagBranch)
@@ -35,7 +41,6 @@ async function build(): Promise<void> {
 
   core.setOutput('commit', getFullCommitHash())
   core.setOutput('server-tag', serverTag)
-  core.setOutput('testenv-tag', testTag)
 }
 
 async function buildStage(stage: string): Promise<string> {
