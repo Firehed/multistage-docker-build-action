@@ -15,8 +15,8 @@ While the initial build will, of course, be performed from scratch, subsequent b
 |---|---|---|---|
 | `repository` | **yes** | | Repository name for pushed images
 | `stages` | **yes** | | Comma-separarted list of build stages |
-| `testenv-stage` | **yes** | | Name of stage for test environment |
 | `server-stage` | **yes** | | Name of stage for server |
+| `testenv-stage` | no | | Name of stage for test environment |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
 
@@ -26,7 +26,7 @@ While the initial build will, of course, be performed from scratch, subsequent b
 |---|---|
 | `commit` | The full commit hash used for tags |
 | `server-tag` | Commit-specific tag for server |
-| `testenv-tag` | Commit-specific tag for test env |
+| `testenv-tag` | Commit-specific tag for test env (`''` if `testenv-stage` is omitted) |
 
 ## Example
 
@@ -83,11 +83,12 @@ jobs:
 The following images will exist:
 
 - `ghcr.io/firehed/actions/server:{commit-hash}`
-- `ghcr.io/firehed/actions/testenv:{commit-hash}`
+- `ghcr.io/firehed/actions/testenv:{commit-hash}` (if `testenv-stage` is provided)
 - `ghcr.io/firehed/actions/env:{branch-related-name}`
 - `ghcr.io/firehed/actions/configured:{branch-related-name}`
 
-The intended use-case is that the `testenv` will be used for further testing in CI, and the `server` will eventually be deployed. You may want remove the intermediate branch images when the branch is closed to save on storage.
+The intended use-case is that the `testenv` will be used for further testing in CI, and the `server` will eventually be deployed.
+You may want remove the intermediate branch images when the branch is closed to save on storage.
 
 ## Known issues/Future features
 
