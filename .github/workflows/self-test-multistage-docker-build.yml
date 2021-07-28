@@ -60,7 +60,7 @@ jobs:
 
   build-server-only:
     name: Build server image only
-    runs-on: ubunti-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -75,8 +75,6 @@ jobs:
         id: build
         with:
           dockerfile: examples/Dockerfile
-          # repository: firehed/actions
-          # repository: gcr.io/firehed/actions
           repository: ghcr.io/firehed/actions
           stages: env, configured
           server-stage: server
