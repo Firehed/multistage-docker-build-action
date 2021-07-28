@@ -16,7 +16,7 @@ inputs:
     required: true
     description: a comma-separated list of build stages
   testenv-stage:
-    required: true
+    required: false
     description: Docker target for testing
   server-stage:
     required: true
