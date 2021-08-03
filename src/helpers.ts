@@ -70,17 +70,40 @@ type DockerCommand = 'pull' | 'push' | 'build' | 'tag'
 
 interface ExecResult {
   exitCode: number
+  stderr: string
+  stdout: string
 }
 
+/**
+ * Runs a docker command and returns the output. Unlike exec.exec, this does
+ * not throw on a nonzero exit code.
+ */
 export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
   let rest: string[] = [command]
   if (core.getBooleanInput('quiet')) {
     rest.push('--quiet')
   }
   rest.push(...args)
-  const exitCode = await exec('docker', rest)
+
+  let stdout = ''
+  let stderr = ''
+
+  const execOptions = {
+    ignoreReturnCode: true, // Will do manual error handling
+    listeners: {
+      stderr: (data: Buffer) => {
+        stderr += data.toString()
+      },
+      stdout: (data: Buffer) => {
+        stdout += data.toString()
+      },
+    }
+  }
+  const exitCode = await exec('docker', rest, execOptions)
 
   return {
     exitCode,
+    stderr,
+    stdout,
   }
 }

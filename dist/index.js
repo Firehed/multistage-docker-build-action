@@ -7649,15 +7649,34 @@ function getTaggedImageForStage(stage, tag) {
     const image = getUntaggedImageForStage(stage);
     return `${image}:${tag}`;
 }
+/**
+ * Runs a docker command and returns the output. Unlike exec.exec, this does
+ * not throw on a nonzero exit code.
+ */
 async function runDockerCommand(command, ...args) {
     let rest = [command];
     if (core.getBooleanInput('quiet')) {
         rest.push('--quiet');
     }
     rest.push(...args);
-    const exitCode = await (0,exec.exec)('docker', rest);
+    let stdout = '';
+    let stderr = '';
+    const execOptions = {
+        ignoreReturnCode: true,
+        listeners: {
+            stderr: (data) => {
+                stderr += data.toString();
+            },
+            stdout: (data) => {
+                stdout += data.toString();
+            },
+        }
+    };
+    const exitCode = await (0,exec.exec)('docker', rest, execOptions);
     return {
         exitCode,
+        stderr,
+        stdout,
     };
 }
 
@@ -7684,17 +7703,12 @@ async function pull() {
     for (const stage of getAllStages()) {
         for (const tag of tagsToTry) {
             const taggedName = getTaggedImageForStage(stage, tag);
-            try {
-                // FIXME: remove try/catch once command stops throwing
-                const ret = await runDockerCommand('pull', taggedName);
-                if (ret.exitCode === 0) {
-                    // Do not try other tags for this stage
-                    break;
-                }
+            const ret = await runDockerCommand('pull', taggedName);
+            if (ret.exitCode === 0) {
+                // Do not try other tags for this stage
+                break;
             }
-            catch (error) {
-                // No-op, pull is allowed to fail
-            }
+            // keep trying other tags for this stage
         }
     }
 }
