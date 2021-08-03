@@ -13,9 +13,10 @@ While the initial build will, of course, be performed from scratch, subsequent b
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `repository` | **yes** | | Repository name for pushed images
+| `repository` | **yes** | | Repository name for pushed images |
 | `stages` | **yes** | | Comma-separarted list of build stages |
 | `server-stage` | **yes** | | Name of stage for server |
+| `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
 | `testenv-stage` | no | | Name of stage for test environment |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
