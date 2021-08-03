@@ -87,7 +87,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
 
   const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
-  const cacheFromArg = Array.from(getAllPossibleCacheTargets())
+  const cacheFromArg = getAllPossibleCacheTargets()
     .flatMap(target => ['--cache-from', target])
 
   const result = await runDockerCommand(
@@ -132,13 +132,11 @@ async function addTagAndPush(image: string, stage: string, tag: string): Promise
   return name
 }
 
-function getAllPossibleCacheTargets(): Set<string> {
+function getAllPossibleCacheTargets(): string[] {
   const tags = [getTagForRun(), 'latest']
   const stages = getAllStages()
 
-  const out = stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)))
-
-  return new Set(out)
+  return stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)))
 }
 
 run()

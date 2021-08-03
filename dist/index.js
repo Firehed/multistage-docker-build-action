@@ -7751,7 +7751,7 @@ async function buildStage(stage, extraTags) {
     core.startGroup(`Building stage: ${stage}`);
     const dockerfile = core.getInput('dockerfile');
     const targetTag = getTaggedImageForStage(stage, getTagForRun());
-    const cacheFromArg = Array.from(getAllPossibleCacheTargets())
+    const cacheFromArg = getAllPossibleCacheTargets()
         .flatMap(target => ['--cache-from', target]);
     const result = await runDockerCommand('build', 
     // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
@@ -7785,8 +7785,7 @@ async function addTagAndPush(image, stage, tag) {
 function getAllPossibleCacheTargets() {
     const tags = [getTagForRun(), 'latest'];
     const stages = getAllStages();
-    const out = stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)));
-    return new Set(out);
+    return stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)));
 }
 run();
 
