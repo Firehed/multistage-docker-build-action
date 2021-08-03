@@ -7,6 +7,7 @@ import {
   getTagForRun,
   getBaseStages,
   getAllStages,
+  getImageForStage,
 } from './helpers'
 
 async function run(): Promise<void> {
@@ -59,12 +60,9 @@ async function build(): Promise<void> {
 async function buildStage(stage: string): Promise<string> {
   core.info(`Building stage ${stage}`)
 
-  const repo = core.getInput('repository')
-
-
   const quiet = core.getInput('quiet') ? '--quiet' : ''
 
-  const name = `${repo}/${stage}`
+  const name = getImageForStage(stage)
   const tagForRun = getTagForRun()
   const tagsToTry = [tagForRun, 'latest']
   // let cacheImage = ''
@@ -159,13 +157,11 @@ async function tagCommit(maybeTaggedImage: string, tag?: string): Promise<string
 function getAllPossibleCacheTargets(): Set<string> {
   const tags = [getTagForRun(), 'latest']
   const stages = getAllStages()
-  const repo = core.getInput('repository')
 
-  const out = stages.map(stage => `${repo}/${stage}`)
+  const out = stages.map(getImageForStage)
     .flatMap(image => tags.map(tag => `${image}:${tag}`))
 
   return new Set(out)
 }
-
 
 run()

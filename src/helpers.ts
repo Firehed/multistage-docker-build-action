@@ -46,3 +46,11 @@ export function getAllStages(): string[] {
     core.getInput('testenv-stage').trim(),
   ]
 }
+
+/**
+ * Takes the build stage and returns an untagged image name for it
+ */
+export function getImageForStage(stage: string): string {
+  const repo = core.getInput('repository')
+  return `${repo}/${stage}`
+}
