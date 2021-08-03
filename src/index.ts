@@ -110,13 +110,13 @@ async function buildStage(stage: string): Promise<string> {
   return targetTag
 }
 
-async function dockerPush(tag: string): Promise<void> {
-  core.debug(`Pushing ${tag}`)
+async function dockerPush(taggedImage: string): Promise<void> {
+  core.debug(`Pushing ${taggedImage}`)
   const quiet = core.getInput('quiet') ? '--quiet' : ''
   const pushResult = await exec.exec('docker', [
     'push',
     quiet,
-    tag,
+    taggedImage,
   ])
   if (pushResult > 0) {
     throw 'Docker push failed'
