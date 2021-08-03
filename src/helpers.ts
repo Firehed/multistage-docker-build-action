@@ -56,7 +56,7 @@ export function getAllStages(): string[] {
 /**
  * Takes the build stage and returns an untagged image name for it
  */
-export function getUntaggedImageForStage(stage: string): string {
+function getUntaggedImageForStage(stage: string): string {
   const repo = core.getInput('repository')
   return `${repo}/${stage}`
 }

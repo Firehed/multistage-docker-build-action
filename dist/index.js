@@ -7801,8 +7801,7 @@ async function tagCommit(maybeTaggedImage, tag) {
 function getAllPossibleCacheTargets() {
     const tags = [getTagForRun(), 'latest'];
     const stages = getAllStages();
-    const out = stages.map(getUntaggedImageForStage)
-        .flatMap(image => tags.map(tag => `${image}:${tag}`));
+    const out = stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)));
     return new Set(out);
 }
 run();
