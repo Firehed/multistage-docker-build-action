@@ -42,6 +42,7 @@ jobs:
           stages: env, configured
           testenv-stage: testenv
           server-stage: server
+          quiet: false
 
   test:
     name: 'test'
@@ -83,3 +84,4 @@ jobs:
         run: |
           echo "Server: ${{ steps.build.outputs.server-tag }}"
           echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
+          echo "Commit: ${{ steps.build.outputs.commit }}"

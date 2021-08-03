@@ -7593,6 +7593,7 @@ var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/helpers.ts
 
 
+
 // Returns a string like "refs_pull_1_merge-bk1"
 function getTagForRun() {
     var _a;
@@ -7637,150 +7638,154 @@ function getAllStages() {
     }
     return stages;
 }
+/**
+ * Takes the build stage and returns an untagged image name for it
+ */
+function getUntaggedImageForStage(stage) {
+    const repo = core.getInput('repository');
+    return `${repo}/${stage}`;
+}
+function getTaggedImageForStage(stage, tag) {
+    const image = getUntaggedImageForStage(stage);
+    return `${image}:${tag}`;
+}
+/**
+ * Runs a docker command and returns the output. Unlike exec.exec, this does
+ * not throw on a nonzero exit code.
+ */
+async function runDockerCommand(command, ...args) {
+    let rest = [command];
+    if (core.getBooleanInput('quiet')) {
+        rest.push('--quiet');
+    }
+    rest.push(...args);
+    let stdout = '';
+    let stderr = '';
+    const execOptions = {
+        ignoreReturnCode: true,
+        listeners: {
+            stderr: (data) => {
+                stderr += data.toString();
+            },
+            stdout: (data) => {
+                stdout += data.toString();
+            },
+        }
+    };
+    const exitCode = await (0,exec.exec)('docker', rest, execOptions);
+    return {
+        exitCode,
+        stderr,
+        stdout,
+    };
+}
 
 ;// CONCATENATED MODULE: ./src/index.ts
 
 
-
 async function run() {
     try {
-        await build();
+        await core.group('Pull images for layer cache', pull);
+        await core.group('Build', build);
     }
     catch (error) {
         core.setFailed(error.message);
     }
 }
+/**
+ * Pre-pull all of the images ahead of the build process so they can be used
+ * for layer caching. Tries multiple tags per stage, preferring this branch/ref
+ * when available.
+ */
+async function pull() {
+    const tagsToTry = [getTagForRun(), 'latest'];
+    for (const stage of getAllStages()) {
+        for (const tag of tagsToTry) {
+            const taggedName = getTaggedImageForStage(stage, tag);
+            const ret = await runDockerCommand('pull', taggedName);
+            if (ret.exitCode === 0) {
+                // Do not try other tags for this stage
+                break;
+            }
+            // keep trying other tags for this stage
+        }
+    }
+}
+/**
+ * Builds to all of the stages specified by the action's inputs, using the
+ * previously-pulled images for layer caching.
+ */
 async function build() {
+    // Build all of the base stages
     const stages = getBaseStages();
     for (const stage of stages) {
-        await buildStage(stage);
+        // Always keep intermediate stages up to date on `latest`; this allows new
+        // branches to have a reasonable chance at a cache hit
+        await buildStage(stage, isDefaultBranch() ? ['latest'] : []);
     }
-    // TODO: refactor these, possibly parallelize
+    const hash = getFullCommitHash();
+    const extraTags = [hash];
+    if (isDefaultBranch() && core.getBooleanInput('tag-latest-on-default')) {
+        extraTags.push('latest');
+    }
+    // Build test env if the stage is specified
     const testStage = core.getInput('testenv-stage').trim();
     if (testStage === '') {
         core.info('testenv-stage not set; skipping build');
     }
     else {
-        // Tag the branch tag & add the commit tag
-        const testTagBranch = await buildStage(testStage);
-        const testTag = await tagCommit(testTagBranch);
-        await dockerPush(testTag);
-        core.setOutput('testenv-tag', testTag);
+        await buildStage(testStage, extraTags);
+        core.setOutput('testenv-tag', getTaggedImageForStage(testStage, hash));
     }
-    // Tag the branch tag & add the commit tag
+    // Build the server env
     const serverStage = core.getInput('server-stage').trim();
-    const serverTagBranch = await buildStage(serverStage);
-    const serverTag = await tagCommit(serverTagBranch);
-    await dockerPush(serverTag);
-    if (core.getBooleanInput('tag-latest-on-default') && isDefaultBranch()) {
-        core.info('Creating `latest` tag for default branch');
-        const latestTag = await tagCommit(serverTagBranch, 'latest');
-        await dockerPush(latestTag);
-    }
-    core.setOutput('commit', getFullCommitHash());
-    core.setOutput('server-tag', serverTag);
+    await buildStage(serverStage, extraTags);
+    core.setOutput('server-tag', getTaggedImageForStage(serverStage, hash));
+    core.setOutput('commit', hash);
 }
 /**
  * Runs docker build commands targeting the specified stage, and returns
  * a tag specific to the ref/branch that the action is run on.
  */
-async function buildStage(stage) {
-    core.info(`Building stage ${stage}`);
-    const repo = core.getInput('repository');
-    const quiet = core.getInput('quiet') ? '--quiet' : '';
-    const name = `${repo}/${stage}`;
-    const tagForRun = getTagForRun();
-    const tagsToTry = [tagForRun, 'latest'];
-    // let cacheImage = ''
-    for (const tag of tagsToTry) {
-        const image = `${name}:${tag}`;
-        core.debug(`Pulling ${image}`);
-        try {
-            await exec.exec('docker', [
-                'pull',
-                quiet,
-                image,
-            ]);
-            // cacheImage = image
-            // Don't pull fallback tags if pull succeeds
-            break;
-        }
-        catch (error) {
-            // Initial pull failing is OK
-            core.info(`Docker pull ${image} failed`);
-        }
-    }
+async function buildStage(stage, extraTags) {
+    core.startGroup(`Building stage: ${stage}`);
     const dockerfile = core.getInput('dockerfile');
-    core.debug(`Building ${stage}`);
-    const targetTag = `${name}:${tagForRun}`;
-    const cacheFrom = Array.from(getAllPossibleCacheTargets())
+    const targetTag = getTaggedImageForStage(stage, getTagForRun());
+    const cacheFromArg = getAllPossibleCacheTargets()
         .flatMap(target => ['--cache-from', target]);
-    const result = await exec.exec('docker', [
-        'build',
-        quiet,
-        // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-        // '--cache-from', cacheImage ? cacheImage : '""',
-        ...cacheFrom,
-        '--file', dockerfile,
-        '--tag', targetTag,
-        '--target', stage,
-        '.'
-    ]);
-    if (result > 0) {
+    const result = await runDockerCommand('build', 
+    // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
+    ...cacheFromArg, '--file', dockerfile, '--tag', targetTag, '--target', stage, '.');
+    if (result.exitCode > 0) {
         throw 'Docker build failed';
     }
     dockerPush(targetTag);
+    for (const extraTag of extraTags) {
+        await addTagAndPush(targetTag, stage, extraTag);
+    }
+    core.endGroup();
     return targetTag;
 }
-async function dockerPush(tag) {
-    core.debug(`Pushing ${tag}`);
-    const quiet = core.getInput('quiet') ? '--quiet' : '';
-    const pushResult = await exec.exec('docker', [
-        'push',
-        quiet,
-        tag,
-    ]);
-    if (pushResult > 0) {
+async function dockerPush(taggedImage) {
+    core.debug(`Pushing ${taggedImage}`);
+    const pushResult = await runDockerCommand('push', taggedImage);
+    if (pushResult.exitCode > 0) {
         throw 'Docker push failed';
     }
 }
 /**
- * Takes a docker image (which may or may not have a tag suffix) and adds or
- * replaces the tag component with the provided tag parameter. If one is not
- * specified, the full git commit hash is used as the tag component.
- *
- * Returns the full target image with tag.
+ * Returns the created tagged image name
  */
-async function tagCommit(maybeTaggedImage, tag) {
-    if (tag === undefined) {
-        tag = getFullCommitHash();
-    }
-    core.info(`Tag component: ${tag}`);
-    // Don't use a simple ":" split since registries can specify port
-    const segments = maybeTaggedImage.split('/');
-    const lastImageSegment = segments.pop();
-    if (lastImageSegment.includes(':')) {
-        const segmentWithoutTag = lastImageSegment.substring(0, lastImageSegment.indexOf(':'));
-        segments.push(`${segmentWithoutTag}:${tag}`);
-    }
-    else {
-        segments.push(`${lastImageSegment}:${tag}`);
-    }
-    const name = segments.join('/');
-    await exec.exec('docker', [
-        'tag',
-        maybeTaggedImage,
-        name,
-    ]);
+async function addTagAndPush(image, stage, tag) {
+    const name = getTaggedImageForStage(stage, tag);
+    await runDockerCommand('tag', image, name);
+    await runDockerCommand('push', name);
     return name;
 }
 function getAllPossibleCacheTargets() {
     const tags = [getTagForRun(), 'latest'];
     const stages = getAllStages();
-    const repo = core.getInput('repository');
-    const out = stages.map(stage => `${repo}/${stage}`)
-        .flatMap(image => tags.map(tag => `${image}:${tag}`));
-    return new Set(out);
+    return stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)));
 }
 run();
 

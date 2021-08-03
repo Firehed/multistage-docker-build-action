@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import { exec } from '@actions/exec'
 import * as github from '@actions/github'
 
 // Returns a string like "refs_pull_1_merge-bk1"
@@ -50,4 +51,59 @@ export function getAllStages(): string[] {
     stages.push(testStage)
   }
   return stages
+}
+
+/**
+ * Takes the build stage and returns an untagged image name for it
+ */
+function getUntaggedImageForStage(stage: string): string {
+  const repo = core.getInput('repository')
+  return `${repo}/${stage}`
+}
+
+export function getTaggedImageForStage(stage: string, tag: string): string {
+  const image = getUntaggedImageForStage(stage)
+  return `${image}:${tag}`
+}
+
+type DockerCommand = 'pull' | 'push' | 'build' | 'tag'
+
+interface ExecResult {
+  exitCode: number
+  stderr: string
+  stdout: string
+}
+
+/**
+ * Runs a docker command and returns the output. Unlike exec.exec, this does
+ * not throw on a nonzero exit code.
+ */
+export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
+  let rest: string[] = [command]
+  if (core.getBooleanInput('quiet')) {
+    rest.push('--quiet')
+  }
+  rest.push(...args)
+
+  let stdout = ''
+  let stderr = ''
+
+  const execOptions = {
+    ignoreReturnCode: true, // Will do manual error handling
+    listeners: {
+      stderr: (data: Buffer) => {
+        stderr += data.toString()
+      },
+      stdout: (data: Buffer) => {
+        stdout += data.toString()
+      },
+    }
+  }
+  const exitCode = await exec('docker', rest, execOptions)
+
+  return {
+    exitCode,
+    stderr,
+    stdout,
+  }
 }
