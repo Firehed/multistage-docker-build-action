@@ -7667,8 +7667,8 @@ async function runDockerCommand(command, ...args) {
 
 async function run() {
     try {
-        await pull();
-        await build();
+        await core.group('Pull images for layer cache', pull);
+        await core.group('Build', build);
     }
     catch (error) {
         core.setFailed(error.message);
@@ -7733,7 +7733,7 @@ async function build() {
  * a tag specific to the ref/branch that the action is run on.
  */
 async function buildStage(stage) {
-    core.info(`Building stage ${stage}`);
+    core.info(`Building stage: ${stage}`);
     const dockerfile = core.getInput('dockerfile');
     const targetTag = getTaggedImageForStage(stage, getTagForRun());
     const cacheFromArg = Array.from(getAllPossibleCacheTargets())
