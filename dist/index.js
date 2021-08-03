@@ -7747,7 +7747,7 @@ async function build() {
  * a tag specific to the ref/branch that the action is run on.
  */
 async function buildStage(stage) {
-    core.info(`Building stage: ${stage}`);
+    core.startGroup(`Building stage: ${stage}`);
     const dockerfile = core.getInput('dockerfile');
     const targetTag = getTaggedImageForStage(stage, getTagForRun());
     const cacheFromArg = Array.from(getAllPossibleCacheTargets())
@@ -7759,6 +7759,7 @@ async function buildStage(stage) {
         throw 'Docker build failed';
     }
     dockerPush(targetTag);
+    core.endGroup();
     return targetTag;
 }
 async function dockerPush(taggedImage) {
