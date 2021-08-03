@@ -37,7 +37,7 @@ async function pull(): Promise<void> {
         // FIXME: remove try/catch & examine exit code
         runDockerCommand('pull', taggedName)
         return
-      } catch {
+      } catch (error) {
         // No-op, pull is allowed to fail
       }
     }

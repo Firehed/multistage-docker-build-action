@@ -7686,7 +7686,7 @@ async function pull() {
                 runDockerCommand('pull', taggedName);
                 return;
             }
-            catch {
+            catch (error) {
                 // No-op, pull is allowed to fail
             }
         }
