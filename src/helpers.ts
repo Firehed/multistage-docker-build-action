@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import { exec } from '@actions/exec'
 import * as github from '@actions/github'
 
 // Returns a string like "refs_pull_1_merge-bk1"
@@ -58,4 +59,19 @@ export function getAllStages(): string[] {
 export function getImageForStage(stage: string): string {
   const repo = core.getInput('repository')
   return `${repo}/${stage}`
+}
+
+type DockerCommand = 'pull' | 'push' | 'build' | 'tag'
+
+interface ExecResult {
+  exitCode: number
+}
+
+export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
+  const quiet = core.getInput('quiet') ? '--quiet' : ''
+  const exitCode = await exec('docker', [command, quiet, ...args])
+
+  return {
+    exitCode,
+  }
 }
