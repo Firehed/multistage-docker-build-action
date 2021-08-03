@@ -97,5 +97,4 @@ You may want remove the intermediate branch images when the branch is closed to 
 - Use with Docker Buildkit (via `DOCKER_BUILDKIT=1`) does not consistently use the layer caches.
   This seems to be a Buildkit issue.
   It's recommended to leave Buildkit disabled at this time.
-- `latest` tags should be created automatically when on the repository's default branch
 - Make a straightforward mechanism to do cleanup
