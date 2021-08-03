@@ -28,21 +28,34 @@ async function build(): Promise<void> {
   if (testStage === '') {
     core.info('testenv-stage not set; skipping build')
   } else {
+    // Tag the branch tag & add the commit tag
     const testTagBranch = await buildStage(testStage)
     const testTag = await tagCommit(testTagBranch)
     await dockerPush(testTag)
     core.setOutput('testenv-tag', testTag)
   }
 
+  // Tag the branch tag & add the commit tag
   const serverStage = core.getInput('server-stage').trim()
   const serverTagBranch = await buildStage(serverStage)
   const serverTag = await tagCommit(serverTagBranch)
   await dockerPush(serverTag)
 
+  if (core.getBooleanInput('tag-latest-on-default') && isDefaultBranch()) {
+    core.info('Creating `latest` tag for default branch')
+    const latestTag = await tagCommit(serverTagBranch, 'latest')
+    await dockerPush(latestTag)
+  }
+
+
   core.setOutput('commit', getFullCommitHash())
   core.setOutput('server-tag', serverTag)
 }
 
+/**
+ * Runs docker build commands targeting the specified stage, and returns
+ * a tag specific to the ref/branch that the action is run on.
+ */
 async function buildStage(stage: string): Promise<string> {
   core.info(`Building stage ${stage}`)
 
@@ -96,11 +109,6 @@ async function buildStage(stage: string): Promise<string> {
     throw 'Docker build failed'
   }
   dockerPush(targetTag)
-  if (isDefaultBranch()) {
-    core.info("TODO: docker tag targetTag name:latest")
-    core.info("TODO: docker push name:latest")
-  }
-
   return targetTag
 }
 
@@ -117,26 +125,35 @@ async function dockerPush(tag: string): Promise<void> {
   }
 }
 
-async function tagCommit(maybeTaggedImage: string): Promise<string> {
-  const hash = getFullCommitHash()
-  core.info(`Commit hash: ${hash}`)
+/**
+ * Takes a docker image (which may or may not have a tag suffix) and adds or
+ * replaces the tag component with the provided tag parameter. If one is not
+ * specified, the full git commit hash is used as the tag component.
+ *
+ * Returns the full target image with tag.
+ */
+async function tagCommit(maybeTaggedImage: string, tag?: string): Promise<string> {
+  if (tag === undefined) {
+    tag = getFullCommitHash()
+  }
+  core.info(`Tag component: ${tag}`)
   // Don't use a simple ":" split since registries can specify port
   const segments = maybeTaggedImage.split('/')
   const lastImageSegment = segments.pop()
   if (lastImageSegment!.includes(':')) {
     const segmentWithoutTag = lastImageSegment!.substring(0, lastImageSegment!.indexOf(':'))
-    segments.push(`${segmentWithoutTag}:${hash}`)
+    segments.push(`${segmentWithoutTag}:${tag}`)
   } else {
-    segments.push(`${lastImageSegment}:${hash}`)
+    segments.push(`${lastImageSegment}:${tag}`)
   }
 
-  const commitTag = segments.join('/')
+  const name = segments.join('/')
   await exec.exec('docker', [
     'tag',
     maybeTaggedImage,
-    commitTag,
+    name,
   ])
-  return commitTag
+  return name
 }
 
 function getAllPossibleCacheTargets(): Set<string> {
