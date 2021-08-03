@@ -13,9 +13,10 @@ While the initial build will, of course, be performed from scratch, subsequent b
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `repository` | **yes** | | Repository name for pushed images
+| `repository` | **yes** | | Repository name for pushed images |
 | `stages` | **yes** | | Comma-separarted list of build stages |
 | `server-stage` | **yes** | | Name of stage for server |
+| `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
 | `testenv-stage` | no | | Name of stage for test environment |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
@@ -83,6 +84,7 @@ jobs:
 The following images will exist:
 
 - `ghcr.io/firehed/actions/server:{commit-hash}`
+- `ghcr.io/firehed/actions/server:latest` (if the action runs on the default branch, e.g. "main" or "master")
 - `ghcr.io/firehed/actions/testenv:{commit-hash}` (if `testenv-stage` is provided)
 - `ghcr.io/firehed/actions/env:{branch-related-name}`
 - `ghcr.io/firehed/actions/configured:{branch-related-name}`
@@ -95,5 +97,4 @@ You may want remove the intermediate branch images when the branch is closed to 
 - Use with Docker Buildkit (via `DOCKER_BUILDKIT=1`) does not consistently use the layer caches.
   This seems to be a Buildkit issue.
   It's recommended to leave Buildkit disabled at this time.
-- `latest` tags should be created automatically when on the repository's default branch
 - Make a straightforward mechanism to do cleanup

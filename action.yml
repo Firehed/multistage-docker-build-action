@@ -15,12 +15,16 @@ inputs:
   stages:
     required: true
     description: a comma-separated list of build stages
-  testenv-stage:
-    required: false
-    description: Docker target for testing
   server-stage:
     required: true
     description: Docker target for server
+  tag-latest-on-default:
+    default: true
+    description: Automatically create a "latest" tag when the action is run on the default branch (defaults to `true`)
+    required: false
+  testenv-stage:
+    required: false
+    description: Docker target for testing
   quiet:
     required: false
     default: true
