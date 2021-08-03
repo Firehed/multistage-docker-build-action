@@ -7678,12 +7678,12 @@ async function run() {
 async function pull() {
     const tagsToTry = [getTagForRun(), 'latest'];
     const stages = getAllStages();
-    stages.forEach((stage) => {
+    stages.forEach(async (stage) => {
         for (const tag of tagsToTry) {
             const taggedName = getTaggedImageForStage(stage, tag);
             try {
                 // FIXME: remove try/catch & examine exit code
-                runDockerCommand('pull', taggedName);
+                await runDockerCommand('pull', taggedName);
                 return;
             }
             catch (error) {
