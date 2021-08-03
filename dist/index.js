@@ -7650,8 +7650,12 @@ function getTaggedImageForStage(stage, tag) {
     return `${image}:${tag}`;
 }
 async function runDockerCommand(command, ...args) {
-    const quiet = core.getBooleanInput('quiet') ? '--quiet' : '';
-    const exitCode = await (0,exec.exec)('docker', [command, quiet, ...args]);
+    let rest = [command];
+    if (core.getBooleanInput('quiet')) {
+        rest.push('--quiet');
+    }
+    rest.push(...args);
+    const exitCode = await (0,exec.exec)('docker', rest);
     return {
         exitCode,
     };
