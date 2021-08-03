@@ -7,15 +7,41 @@ import {
   getTagForRun,
   getBaseStages,
   getAllStages,
-  getImageForStage,
+  getTaggedImageForStage,
+  getUntaggedImageForStage,
+  runDockerCommand,
 } from './helpers'
 
 async function run(): Promise<void> {
   try {
+    await pull()
     await build()
   } catch (error) {
     core.setFailed(error.message)
   }
+}
+
+/**
+ * Pre-pull all of the images ahead of the build process so they can be used
+ * for layer caching. Tries multiple tags per stage, preferring this branch/ref
+ * when available.
+ */
+async function pull(): Promise<void> {
+  const tagsToTry = [getTagForRun(), 'latest']
+
+  const stages = getAllStages()
+  stages.forEach((stage) => {
+    for (const tag of tagsToTry) {
+      const taggedName = getTaggedImageForStage(stage, tag)
+      try {
+        // FIXME: remove try/catch & examine exit code
+        runDockerCommand('pull', taggedName)
+        return
+      } catch {
+        // No-op, pull is allowed to fail
+      }
+    }
+  })
 }
 
 async function build(): Promise<void> {
@@ -61,28 +87,6 @@ async function buildStage(stage: string): Promise<string> {
   core.info(`Building stage ${stage}`)
 
   const quiet = core.getInput('quiet') ? '--quiet' : ''
-
-  const name = getImageForStage(stage)
-  const tagForRun = getTagForRun()
-  const tagsToTry = [tagForRun, 'latest']
-  // let cacheImage = ''
-  for (const tag of tagsToTry) {
-    const image = `${name}:${tag}`
-    core.debug(`Pulling ${image}`)
-    try {
-      await exec.exec('docker', [
-        'pull',
-        quiet,
-        image,
-      ])
-      // cacheImage = image
-      // Don't pull fallback tags if pull succeeds
-      break
-    } catch (error) {
-      // Initial pull failing is OK
-      core.info(`Docker pull ${image} failed`)
-    }
-  }
 
   const dockerfile = core.getInput('dockerfile')
 
