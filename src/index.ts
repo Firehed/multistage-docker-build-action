@@ -86,28 +86,23 @@ async function build(): Promise<void> {
 async function buildStage(stage: string): Promise<string> {
   core.info(`Building stage ${stage}`)
 
-  const quiet = core.getInput('quiet') ? '--quiet' : ''
-
   const dockerfile = core.getInput('dockerfile')
 
-  core.debug(`Building ${stage}`)
+  const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
-  const targetTag = `${name}:${tagForRun}`
-
-  const cacheFrom = Array.from(getAllPossibleCacheTargets())
+  const cacheFromArg = Array.from(getAllPossibleCacheTargets())
     .flatMap(target => ['--cache-from', target])
-  const result = await exec.exec('docker', [
+
+  const result = await runDockerCommand(
     'build',
-    quiet,
     // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-    // '--cache-from', cacheImage ? cacheImage : '""',
-    ...cacheFrom,
+    ...cacheFromArg,
     '--file', dockerfile,
     '--tag', targetTag,
     '--target', stage,
     '.'
-  ])
-  if (result > 0) {
+  )
+  if (result.exitCode > 0) {
     throw 'Docker build failed'
   }
   dockerPush(targetTag)
@@ -116,13 +111,11 @@ async function buildStage(stage: string): Promise<string> {
 
 async function dockerPush(taggedImage: string): Promise<void> {
   core.debug(`Pushing ${taggedImage}`)
-  const quiet = core.getInput('quiet') ? '--quiet' : ''
-  const pushResult = await exec.exec('docker', [
+  const pushResult = await runDockerCommand(
     'push',
-    quiet,
     taggedImage,
-  ])
-  if (pushResult > 0) {
+  )
+  if (pushResult.exitCode > 0) {
     throw 'Docker push failed'
   }
 }
@@ -162,7 +155,7 @@ function getAllPossibleCacheTargets(): Set<string> {
   const tags = [getTagForRun(), 'latest']
   const stages = getAllStages()
 
-  const out = stages.map(getImageForStage)
+  const out = stages.map(getUntaggedImageForStage)
     .flatMap(image => tags.map(tag => `${image}:${tag}`))
 
   return new Set(out)
