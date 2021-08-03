@@ -7681,20 +7681,22 @@ async function run() {
  */
 async function pull() {
     const tagsToTry = [getTagForRun(), 'latest'];
-    const stages = getAllStages();
-    stages.forEach(async (stage) => {
+    for (const stage of getAllStages()) {
         for (const tag of tagsToTry) {
             const taggedName = getTaggedImageForStage(stage, tag);
             try {
-                // FIXME: remove try/catch & examine exit code
-                await runDockerCommand('pull', taggedName);
-                return;
+                // FIXME: remove try/catch once command stops throwing
+                const ret = await runDockerCommand('pull', taggedName);
+                if (ret.exitCode === 0) {
+                    // Do not try other tags for this stage
+                    break;
+                }
             }
             catch (error) {
                 // No-op, pull is allowed to fail
             }
         }
-    });
+    }
 }
 async function build() {
     const stages = getBaseStages();
