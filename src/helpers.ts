@@ -56,9 +56,14 @@ export function getAllStages(): string[] {
 /**
  * Takes the build stage and returns an untagged image name for it
  */
-export function getImageForStage(stage: string): string {
+export function getUntaggedImageForStage(stage: string): string {
   const repo = core.getInput('repository')
   return `${repo}/${stage}`
+}
+
+export function getTaggedImageForStage(stage: string, tag: string): string {
+  const image = getUntaggedImageForStage(stage)
+  return `${image}:${tag}`
 }
 
 type DockerCommand = 'pull' | 'push' | 'build' | 'tag'
