@@ -40,9 +40,14 @@ export function getBaseStages(): string[] {
 }
 
 export function getAllStages(): string[] {
-  return [
+  const stages = [
     ...getBaseStages(),
-    core.getInput('testenv-stage').trim(),
-    core.getInput('testenv-stage').trim(),
+    core.getInput('server-stage').trim(),
   ]
+
+  const testStage = core.getInput('testenv-stage').trim()
+  if (testStage !== '') {
+    stages.push(testStage)
+  }
+  return stages
 }

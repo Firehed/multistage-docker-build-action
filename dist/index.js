@@ -7627,11 +7627,15 @@ function getBaseStages() {
     return core.getInput('stages').split(',').map(stage => stage.trim());
 }
 function getAllStages() {
-    return [
+    const stages = [
         ...getBaseStages(),
-        core.getInput('testenv-stage').trim(),
-        core.getInput('testenv-stage').trim(),
+        core.getInput('server-stage').trim(),
     ];
+    const testStage = core.getInput('testenv-stage').trim();
+    if (testStage !== '') {
+        stages.push(testStage);
+    }
+    return stages;
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
