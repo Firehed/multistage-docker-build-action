@@ -43,6 +43,6 @@ export function getAllStages(): string[] {
   return [
     ...getBaseStages(),
     core.getInput('testenv-stage').trim(),
-    core.getInput('testenv-stage').trim(),
+    core.getInput('server-stage').trim(),
   ]
 }
