@@ -73,7 +73,7 @@ interface ExecResult {
 }
 
 export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
-  const quiet = core.getInput('quiet') ? '--quiet' : ''
+  const quiet = core.getBooleanInput('quiet') ? '--quiet' : ''
   const exitCode = await exec('docker', [command, quiet, ...args])
 
   return {

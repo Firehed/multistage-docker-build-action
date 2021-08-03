@@ -42,6 +42,7 @@ jobs:
           stages: env, configured
           testenv-stage: testenv
           server-stage: server
+          quiet: false
 
   test:
     name: 'test'
@@ -78,6 +79,7 @@ jobs:
           repository: ghcr.io/firehed/actions
           stages: env, configured
           server-stage: server
+          quiet: false
 
       - name: Print outputs
         run: |
