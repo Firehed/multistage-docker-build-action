@@ -79,7 +79,7 @@ jobs:
           repository: ghcr.io/firehed/actions
           stages: env, configured
           server-stage: server
-          quiet: false
+          # quiet: false
 
       - name: Print outputs
         run: |
