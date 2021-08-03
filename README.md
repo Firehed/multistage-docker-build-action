@@ -84,6 +84,7 @@ jobs:
 The following images will exist:
 
 - `ghcr.io/firehed/actions/server:{commit-hash}`
+- `ghcr.io/firehed/actions/server:latest` (if the action runs on the default branch, e.g. "main" or "master")
 - `ghcr.io/firehed/actions/testenv:{commit-hash}` (if `testenv-stage` is provided)
 - `ghcr.io/firehed/actions/env:{branch-related-name}`
 - `ghcr.io/firehed/actions/configured:{branch-related-name}`
