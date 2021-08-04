@@ -80,7 +80,7 @@ interface ExecResult {
  */
 export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
   let rest: string[] = [command]
-  if (core.getBooleanInput('quiet')) {
+  if (core.getBooleanInput('quiet') && command !== 'tag') {
     rest.push('--quiet')
   }
   rest.push(...args)

@@ -7655,7 +7655,7 @@ function getTaggedImageForStage(stage, tag) {
  */
 async function runDockerCommand(command, ...args) {
     let rest = [command];
-    if (core.getBooleanInput('quiet')) {
+    if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
     rest.push(...args);
@@ -7778,8 +7778,11 @@ async function dockerPush(taggedImage) {
  */
 async function addTagAndPush(image, stage, tag) {
     const name = getTaggedImageForStage(stage, tag);
-    await runDockerCommand('tag', image, name);
-    await runDockerCommand('push', name);
+    const tagResult = await runDockerCommand('tag', image, name);
+    if (tagResult.exitCode > 0) {
+        throw 'Docker tag failed';
+    }
+    await dockerPush(name);
     return name;
 }
 function getAllPossibleCacheTargets() {
