@@ -127,8 +127,11 @@ async function dockerPush(taggedImage: string): Promise<void> {
  */
 async function addTagAndPush(image: string, stage: string, tag: string): Promise<string> {
   const name = getTaggedImageForStage(stage, tag)
-  await runDockerCommand('tag', image, name)
-  await runDockerCommand('push', name)
+  const tagResult = await runDockerCommand('tag', image, name)
+  if (tagResult.exitCode > 0) {
+    throw 'Docker tag failed'
+  }
+  await dockerPush(name)
   return name
 }
 
