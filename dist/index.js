@@ -7655,7 +7655,7 @@ function getTaggedImageForStage(stage, tag) {
  */
 async function runDockerCommand(command, ...args) {
     let rest = [command];
-    if (core.getBooleanInput('quiet')) {
+    if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
     rest.push(...args);
