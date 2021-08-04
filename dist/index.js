@@ -7759,7 +7759,7 @@ async function buildStage(stage, extraTags) {
     if (result.exitCode > 0) {
         throw 'Docker build failed';
     }
-    dockerPush(targetTag);
+    await dockerPush(targetTag);
     for (const extraTag of extraTags) {
         await addTagAndPush(targetTag, stage, extraTag);
     }
