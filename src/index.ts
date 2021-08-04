@@ -102,7 +102,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
   if (result.exitCode > 0) {
     throw 'Docker build failed'
   }
-  dockerPush(targetTag)
+  await dockerPush(targetTag)
 
   for (const extraTag of extraTags) {
     await addTagAndPush(targetTag, stage, extraTag)
