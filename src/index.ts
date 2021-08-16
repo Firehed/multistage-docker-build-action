@@ -16,7 +16,7 @@ async function run(): Promise<void> {
     await time('Pull images', () =>
       core.group('Pull images for layer cache', pull)
     )
-    time('Full Build', build)
+    await time('Full Build', build)
   } catch (error) {
     core.setFailed(error.message)
   }

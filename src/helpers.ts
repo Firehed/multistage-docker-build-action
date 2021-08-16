@@ -109,10 +109,10 @@ export async function runDockerCommand(command: DockerCommand, ...args: string[]
 }
 
 
-export function time<T>(name: string, timedFunction: () => T): T {
+export async function time<T>(name: string, timedFunction: () => Promise<T>): Promise<T> {
   const start = Date.now()
   try {
-    return timedFunction()
+    return await timedFunction()
   } finally {
     const durationMs = Date.now() - start
     core.info(`Completed ${name} in ${durationMs}ms`)

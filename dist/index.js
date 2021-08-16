@@ -7679,10 +7679,10 @@ async function runDockerCommand(command, ...args) {
         stdout,
     };
 }
-function time(name, timedFunction) {
+async function time(name, timedFunction) {
     const start = Date.now();
     try {
-        return timedFunction();
+        return await timedFunction();
     }
     finally {
         const durationMs = Date.now() - start;
@@ -7696,7 +7696,7 @@ function time(name, timedFunction) {
 async function run() {
     try {
         await time('Pull images', () => core.group('Pull images for layer cache', pull));
-        time('Full Build', build);
+        await time('Full Build', build);
     }
     catch (error) {
         core.setFailed(error.message);
