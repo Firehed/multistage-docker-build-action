@@ -7679,14 +7679,24 @@ async function runDockerCommand(command, ...args) {
         stdout,
     };
 }
+function time(name, timedFunction) {
+    const start = Date.now();
+    try {
+        return timedFunction();
+    }
+    finally {
+        const durationMs = Date.now() - start;
+        core.info(`Completed ${name} in ${durationMs}ms`);
+    }
+}
 
 ;// CONCATENATED MODULE: ./src/index.ts
 
 
 async function run() {
     try {
-        await core.group('Pull images for layer cache', pull);
-        await core.group('Build', build);
+        await time('Pull images', () => core.group('Pull images for layer cache', pull));
+        time('Full Build', build);
     }
     catch (error) {
         core.setFailed(error.message);
@@ -7748,23 +7758,25 @@ async function build() {
  * a tag specific to the ref/branch that the action is run on.
  */
 async function buildStage(stage, extraTags) {
-    core.startGroup(`Building stage: ${stage}`);
-    const dockerfile = core.getInput('dockerfile');
-    const targetTag = getTaggedImageForStage(stage, getTagForRun());
-    const cacheFromArg = getAllPossibleCacheTargets()
-        .flatMap(target => ['--cache-from', target]);
-    const result = await runDockerCommand('build', 
-    // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-    ...cacheFromArg, '--file', dockerfile, '--tag', targetTag, '--target', stage, '.');
-    if (result.exitCode > 0) {
-        throw 'Docker build failed';
-    }
-    await dockerPush(targetTag);
-    for (const extraTag of extraTags) {
-        await addTagAndPush(targetTag, stage, extraTag);
-    }
-    core.endGroup();
-    return targetTag;
+    return time(`Build ${stage}`, async () => {
+        core.startGroup(`Building stage: ${stage}`);
+        const dockerfile = core.getInput('dockerfile');
+        const targetTag = getTaggedImageForStage(stage, getTagForRun());
+        const cacheFromArg = getAllPossibleCacheTargets()
+            .flatMap(target => ['--cache-from', target]);
+        const result = await runDockerCommand('build', 
+        // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
+        ...cacheFromArg, '--file', dockerfile, '--tag', targetTag, '--target', stage, '.');
+        if (result.exitCode > 0) {
+            throw 'Docker build failed';
+        }
+        await dockerPush(targetTag);
+        for (const extraTag of extraTags) {
+            await addTagAndPush(targetTag, stage, extraTag);
+        }
+        core.endGroup();
+        return targetTag;
+    });
 }
 async function dockerPush(taggedImage) {
     core.debug(`Pushing ${taggedImage}`);

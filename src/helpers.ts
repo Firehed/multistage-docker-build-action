@@ -107,3 +107,14 @@ export async function runDockerCommand(command: DockerCommand, ...args: string[]
     stdout,
   }
 }
+
+
+export function time<T>(name: string, timedFunction: () => T): T {
+  const start = Date.now()
+  try {
+    return timedFunction()
+  } finally {
+    const durationMs = Date.now() - start
+    core.info(`Completed ${name} in ${durationMs}ms`)
+  }
+}
