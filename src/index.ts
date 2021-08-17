@@ -8,12 +8,15 @@ import {
   getAllStages,
   getTaggedImageForStage,
   runDockerCommand,
+  time,
 } from './helpers'
 
 async function run(): Promise<void> {
   try {
-    await core.group('Pull images for layer cache', pull)
-    await core.group('Build', build)
+    await time('Pull images', () =>
+      core.group('Pull images for layer cache', pull)
+    )
+    await time('Full Build', build)
   } catch (error) {
     core.setFailed(error.message)
   }
@@ -84,34 +87,36 @@ async function build(): Promise<void> {
  * a tag specific to the ref/branch that the action is run on.
  */
 async function buildStage(stage: string, extraTags: string[]): Promise<string> {
-  core.startGroup(`Building stage: ${stage}`)
+  return time(`Build ${stage}`, async () => {
+    core.startGroup(`Building stage: ${stage}`)
 
-  const dockerfile = core.getInput('dockerfile')
+    const dockerfile = core.getInput('dockerfile')
 
-  const targetTag = getTaggedImageForStage(stage, getTagForRun())
+    const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
-  const cacheFromArg = getAllPossibleCacheTargets()
+    const cacheFromArg = getAllPossibleCacheTargets()
     .flatMap(target => ['--cache-from', target])
 
-  const result = await runDockerCommand(
-    'build',
-    // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-    ...cacheFromArg,
-    '--file', dockerfile,
-    '--tag', targetTag,
-    '--target', stage,
-    '.'
-  )
-  if (result.exitCode > 0) {
-    throw 'Docker build failed'
-  }
-  await dockerPush(targetTag)
+    const result = await runDockerCommand(
+      'build',
+      // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
+      ...cacheFromArg,
+      '--file', dockerfile,
+      '--tag', targetTag,
+      '--target', stage,
+      '.'
+    )
+    if (result.exitCode > 0) {
+      throw 'Docker build failed'
+    }
+    await dockerPush(targetTag)
 
-  for (const extraTag of extraTags) {
-    await addTagAndPush(targetTag, stage, extraTag)
-  }
-  core.endGroup()
-  return targetTag
+    for (const extraTag of extraTags) {
+      await addTagAndPush(targetTag, stage, extraTag)
+    }
+    core.endGroup()
+    return targetTag
+  })
 }
 
 async function dockerPush(taggedImage: string): Promise<void> {
