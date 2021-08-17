@@ -37,7 +37,10 @@ export function getFullCommitHash(): string {
 }
 
 export function getBaseStages(): string[] {
-  return core.getInput('stages').split(',').map(stage => stage.trim())
+  return core.getInput('stages')
+    .split(',')
+    .map(stage => stage.trim())
+    .filter(stage => stage !== '')
 }
 
 export function getAllStages(): string[] {

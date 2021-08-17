@@ -7625,7 +7625,10 @@ function getFullCommitHash() {
     return github.context.sha;
 }
 function getBaseStages() {
-    return core.getInput('stages').split(',').map(stage => stage.trim());
+    return core.getInput('stages')
+        .split(',')
+        .map(stage => stage.trim())
+        .filter(stage => stage !== '');
 }
 function getAllStages() {
     const stages = [
@@ -7718,6 +7721,9 @@ async function pull() {
 async function build() {
     // Build all of the base stages
     const stages = getBaseStages();
+    if (stages.length === 0) {
+        core.warning("No base stages included - build process will have limited caching");
+    }
     for (const stage of stages) {
         // Always keep intermediate stages up to date on `latest`; this allows new
         // branches to have a reasonable chance at a cache hit

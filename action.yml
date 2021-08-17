@@ -14,7 +14,7 @@ inputs:
     description: Repository that all of the images and tags will pull from and push to
   stages:
     required: true
-    description: a comma-separated list of build stages
+    description: A comma-separated list of build stages
   server-stage:
     required: true
     description: Docker target for server

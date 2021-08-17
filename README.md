@@ -14,7 +14,7 @@ While the initial build will, of course, be performed from scratch, subsequent b
 | Input | Required | Default | Description |
 |---|---|---|---|
 | `repository` | **yes** | | Repository name for pushed images |
-| `stages` | **yes** | | Comma-separarted list of build stages |
+| `stages` | **yes** | | Comma-separarted list of build stages. Each of these will be an explicit cache target for subsequent builds |
 | `server-stage` | **yes** | | Name of stage for server |
 | `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
 | `testenv-stage` | no | | Name of stage for test environment |
