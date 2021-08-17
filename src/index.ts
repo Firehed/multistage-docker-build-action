@@ -47,6 +47,9 @@ async function pull(): Promise<void> {
 async function build(): Promise<void> {
   // Build all of the base stages
   const stages = getBaseStages()
+  if (stages.length === 0) {
+    core.warning("No base stages included - build process will have limited caching")
+  }
   for (const stage of stages) {
     // Always keep intermediate stages up to date on `latest`; this allows new
     // branches to have a reasonable chance at a cache hit
