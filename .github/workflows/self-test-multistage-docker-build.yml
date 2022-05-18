@@ -35,6 +35,7 @@ jobs:
       - uses: ./
         id: build
         with:
+          build-args: BUILD_ARG_1=hello, BUILD_ARG_2=goodbye
           dockerfile: examples/Dockerfile
           # repository: firehed/actions
           # repository: gcr.io/firehed/actions
@@ -56,6 +57,22 @@ jobs:
             --rm
             ${{ needs.build.outputs.testenv-tag }}
             echo "I'm a test!"
+
+      - name: get build arg1
+        id: build-args
+        run: docker run
+            --rm
+            ${{ needs.build.outputs.testenv-tag }}
+            sh print-outputs.sh
+
+      - name: validate build arg 1
+        if: ${{ steps.build-args.outputs.arg1 != 'hello' }}
+        run: exit 1
+
+      - name: validate build arg 2
+        if: ${{ steps.build-args.outputs.arg2 != 'goodbye' }}
+        run: exit 1
+
       - name: display server
         run: echo ${{ needs.build.outputs.server-tag }}
 
