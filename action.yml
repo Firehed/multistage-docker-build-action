@@ -5,6 +5,10 @@ author: Eric Stern
 description: Build Docker images to maximize layer caching and minimize build times
 
 inputs:
+  build-args:
+    description: A comma-separated list of `--build-arg` flags
+    required: false
+    default: ''
   dockerfile:
     description: Path to Dockerfile
     required: false

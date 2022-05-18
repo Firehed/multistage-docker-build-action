@@ -4,6 +4,7 @@ import {
   isDefaultBranch,
   getFullCommitHash,
   getTagForRun,
+  getBuildArgs,
   getBaseStages,
   getAllStages,
   getTaggedImageForStage,
@@ -95,11 +96,15 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
     const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
     const cacheFromArg = getAllPossibleCacheTargets()
-    .flatMap(target => ['--cache-from', target])
+      .flatMap(target => ['--cache-from', target])
+
+    const buildArgs = getBuildArgs()
+      .flatMap(arg => ['--build-arg', arg])
 
     const result = await runDockerCommand(
       'build',
       // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
+      ...buildArgs,
       ...cacheFromArg,
       '--file', dockerfile,
       '--tag', targetTag,

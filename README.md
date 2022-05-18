@@ -20,6 +20,7 @@ While the initial build will, of course, be performed from scratch, subsequent b
 | `testenv-stage` | no | | Name of stage for test environment |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
+| `build-args` | no | | Comma-separated list of `--build-arg` flags. |
 
 ## Outputs
 
@@ -69,6 +70,7 @@ jobs:
           stages: env, configured
           testenv-stage: testenv
           server-stage: server
+          build-args: arg1=val1, arg2=val2
 
       # This assumes your testenv actually runs the tests, and
       # exits 0 if they all pass and nonzero on failure
