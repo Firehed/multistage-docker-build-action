@@ -43,6 +43,13 @@ export function getBaseStages(): string[] {
     .filter(stage => stage !== '')
 }
 
+export function getBuildArgs(): string[] {
+  return core.getInput('build-args')
+    .split(',')
+    .map(arg => arg.trim())
+    .filter(arg => arg !== '')
+}
+
 export function getAllStages(): string[] {
   const stages = [
     ...getBaseStages(),
