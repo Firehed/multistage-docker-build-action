@@ -35,7 +35,7 @@ jobs:
       - uses: ./
         id: build
         with:
-          build-args: BUILD_ARG_1=hello, BUILD_ARG_2=goodbye
+          build-args: BUILD_ARG_1=hello, BUILD_ARG_2=goodbye, version=${{ github.sha }}
           dockerfile: examples/Dockerfile
           # repository: firehed/actions
           # repository: gcr.io/firehed/actions
