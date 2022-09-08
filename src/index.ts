@@ -109,7 +109,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       '--file', dockerfile,
       '--tag', targetTag,
       '--target', stage,
-      '.'
+      core.getInput('context'),
     )
     if (result.exitCode > 0) {
       throw 'Docker build failed'

@@ -7796,7 +7796,7 @@ async function buildStage(stage, extraTags) {
             .flatMap(arg => ['--build-arg', arg]);
         const result = await runDockerCommand('build', 
         // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-        ...buildArgs, ...cacheFromArg, '--file', dockerfile, '--tag', targetTag, '--target', stage, '.');
+        ...buildArgs, ...cacheFromArg, '--file', dockerfile, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {
             throw 'Docker build failed';
         }
