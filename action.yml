@@ -16,7 +16,7 @@ inputs:
   dockerfile:
     description: Path to Dockerfile
     required: false
-    default: Dockerfile
+    default: ''
   repository:
     required: true
     description: Repository that all of the images and tags will pull from and push to

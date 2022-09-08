@@ -92,6 +92,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
     core.startGroup(`Building stage: ${stage}`)
 
     const dockerfile = core.getInput('dockerfile')
+    const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile]
 
     const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
@@ -106,7 +107,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
       ...buildArgs,
       ...cacheFromArg,
-      '--file', dockerfile,
+      ...dockerfileArg,
       '--tag', targetTag,
       '--target', stage,
       core.getInput('context'),
