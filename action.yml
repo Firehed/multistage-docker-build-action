@@ -9,6 +9,10 @@ inputs:
     description: A comma-separated list of `--build-arg` flags
     required: false
     default: ''
+  context:
+    description: Build context. Default to `.`
+    required: false
+    default: '.'
   dockerfile:
     description: Path to Dockerfile
     required: false
