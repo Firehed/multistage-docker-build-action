@@ -131,3 +131,6 @@ jobs:
           echo "Server: ${{ steps.build.outputs.server-tag }}"
           echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
           echo "Commit: ${{ steps.build.outputs.commit }}"
+
+      - name: Run image
+        run: docker exec --rm ${{ steps.build.outputs.server }}
