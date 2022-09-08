@@ -2,6 +2,11 @@ import * as core from '@actions/core'
 import { exec } from '@actions/exec'
 import * as github from '@actions/github'
 
+let cwd = '.'
+export function setCwd(newCwd: string) {
+  cwd = newCwd
+}
+
 // Returns a string like "refs_pull_1_merge-bk1"
 export function getTagForRun(): string {
   const usingBuildkit = process.env.DOCKER_BUILDKIT === '1'
@@ -107,7 +112,8 @@ export async function runDockerCommand(command: DockerCommand, ...args: string[]
       stdout: (data: Buffer) => {
         stdout += data.toString()
       },
-    }
+    },
+    cwd,
   }
   const exitCode = await exec('docker', rest, execOptions)
 

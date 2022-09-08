@@ -132,3 +132,4 @@ jobs:
         with:
           repository: ghcr.io/firehed/actions/working-directory
           server-stage: server
+          working-directory: examples

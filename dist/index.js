@@ -7594,6 +7594,10 @@ var github = __nccwpck_require__(5438);
 
 
 
+let cwd = '.';
+function setCwd(newCwd) {
+    cwd = newCwd;
+}
 // Returns a string like "refs_pull_1_merge-bk1"
 function getTagForRun() {
     var _a;
@@ -7679,7 +7683,8 @@ async function runDockerCommand(command, ...args) {
             stdout: (data) => {
                 stdout += data.toString();
             },
-        }
+        },
+        cwd,
     };
     const exitCode = await (0,exec.exec)('docker', rest, execOptions);
     return {
@@ -7720,6 +7725,8 @@ function formatMs(ms) {
 
 async function run() {
     try {
+        const workingDirectory = core.getInput('working-directory');
+        setCwd(workingDirectory);
         await time('Pull images', () => core.group('Pull images for layer cache', pull));
         await time('Full Build', build);
     }

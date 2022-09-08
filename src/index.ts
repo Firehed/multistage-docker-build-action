@@ -9,11 +9,14 @@ import {
   getAllStages,
   getTaggedImageForStage,
   runDockerCommand,
+  setCwd,
   time,
 } from './helpers'
 
 async function run(): Promise<void> {
   try {
+    const workingDirectory = core.getInput('working-directory')
+    setCwd(workingDirectory)
     await time('Pull images', () =>
       core.group('Pull images for layer cache', pull)
     )
