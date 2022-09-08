@@ -89,11 +89,17 @@ The following images will exist:
 - `ghcr.io/firehed/actions/server:{commit-hash}`
 - `ghcr.io/firehed/actions/server:latest` (if the action runs on the default branch, e.g. "main" or "master")
 - `ghcr.io/firehed/actions/testenv:{commit-hash}` (if `testenv-stage` is provided)
-- `ghcr.io/firehed/actions/env:{branch-related-name}`
-- `ghcr.io/firehed/actions/configured:{branch-related-name}`
 
 The intended use-case is that the `testenv` will be used for further testing in CI, and the `server` will eventually be deployed.
 You may want remove the intermediate branch images when the branch is closed to save on storage.
+
+The following images will also be created, but they are for internal use only (relating to layer caching).
+You should not use, deploy, or otherwise depend on them - they may change at any time!
+
+- `ghcr.io/firehed/actions/env:{branch-related-name}`
+- `ghcr.io/firehed/actions/configured:{branch-related-name}`
+
+tl:dr: If it comes from one of the `outputs` of this action, go ahead and use it. If not, don't!
 
 ## Known issues/Future features
 
