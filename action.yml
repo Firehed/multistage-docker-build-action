@@ -33,6 +33,10 @@ inputs:
     required: false
     default: true
     description: Send `--quiet` flag to docker commands
+  working-directory:
+    required: false
+    default: .
+    description: Change to this directory while running
 
 outputs:
   commit:
