@@ -133,4 +133,4 @@ jobs:
           echo "Commit: ${{ steps.build.outputs.commit }}"
 
       - name: Run image
-        run: docker exec --rm ${{ steps.build.outputs.server }}
+        run: docker run --rm ${{ steps.build.outputs.server-tag }}
