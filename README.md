@@ -18,6 +18,7 @@ While the initial build will, of course, be performed from scratch, subsequent b
 | `server-stage` | **yes** | | Name of stage for server |
 | `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
 | `testenv-stage` | no | | Name of stage for test environment |
+| `context` | no | `.` | Build context |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
 | `build-args` | no | | Comma-separated list of `--build-arg` flags. |
