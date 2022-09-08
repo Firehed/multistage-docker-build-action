@@ -102,3 +102,20 @@ jobs:
           echo "Server: ${{ steps.build.outputs.server-tag }}"
           echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
           echo "Commit: ${{ steps.build.outputs.commit }}"
+
+  build-with-working-directory:
+    name: Build using working directory
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          pwd
+          ls -la
+        name: debug
+      # - uses: ./
+      #   id: build
+      #   with:
+      #     repository: ghcr/firehed
