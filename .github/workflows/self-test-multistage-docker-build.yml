@@ -6,6 +6,12 @@ on:
       - main
   pull_request:
 
+# Help Dependabot checks run
+permissions:
+  checks: write
+  contents: read
+  packages: write
+
 jobs:
   build:
     name: Build docker images
