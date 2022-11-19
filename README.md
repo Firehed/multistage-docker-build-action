@@ -8,6 +8,9 @@ The inputs to this action allow you to specify the various build stage names as 
 Each stage will be tagged using the branch name and full commit hash.
 While the initial build will, of course, be performed from scratch, subsequent builds will pull the previously-built images that the layer caching can use.
 
+While the action allows many stages to be pushed to the registry for future re-use, two final stages are defined for different purposes:
+* The `testenv-stage` is a stage specially labeled for use in testing your software.  It usually includes all the runtime dependencies for your software and any additional dependencies that may only be required for testing.  
+* The `server-stage` is a stage specially labeled for deployment of your software.  It usually includes a fully installed version of your software.  This stage can be used in different ways depending on the purpose of your software.  If your software is a server, then this stage can be the basis for deployment in production.  If your software is for individual users to process data, then this stage can be luanched to use the software.
 
 ## Inputs
 
