@@ -21,6 +21,10 @@ async function run(): Promise<void> {
   } catch (error) {
     if (error instanceof Error) {
       core.setFailed(error.message)
+    } else if (typeof error === 'string') {
+      core.setFailed(error)
+    } else {
+      core.setFailed('Unknown error! type: ' + typeof error)
     }
   }
 }
@@ -115,7 +119,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       core.getInput('context'),
     )
     if (result.exitCode > 0) {
-      throw 'Docker build failed'
+      throw new Error('Docker build failed')
     }
     await dockerPush(targetTag)
 
@@ -134,7 +138,7 @@ async function dockerPush(taggedImage: string): Promise<void> {
     taggedImage,
   )
   if (pushResult.exitCode > 0) {
-    throw 'Docker push failed'
+    throw new Error('Docker push failed')
   }
 }
 
@@ -145,7 +149,7 @@ async function addTagAndPush(image: string, stage: string, tag: string): Promise
   const name = getTaggedImageForStage(stage, tag)
   const tagResult = await runDockerCommand('tag', image, name)
   if (tagResult.exitCode > 0) {
-    throw 'Docker tag failed'
+    throw new Error('Docker tag failed')
   }
   await dockerPush(name)
   return name
@@ -158,4 +162,4 @@ function getAllPossibleCacheTargets(): string[] {
   return stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)))
 }
 
-run()
+run() // eslint-disable-line
