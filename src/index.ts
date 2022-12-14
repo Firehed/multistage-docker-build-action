@@ -118,7 +118,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       core.getInput('context'),
     )
     if (result.exitCode > 0) {
-      throw 'Docker build failed'
+      throw new Error('Docker build failed')
     }
     await dockerPush(targetTag)
 
@@ -137,7 +137,7 @@ async function dockerPush(taggedImage: string): Promise<void> {
     taggedImage,
   )
   if (pushResult.exitCode > 0) {
-    throw 'Docker push failed'
+    throw new Error('Docker push failed')
   }
 }
 
@@ -148,7 +148,7 @@ async function addTagAndPush(image: string, stage: string, tag: string): Promise
   const name = getTaggedImageForStage(stage, tag)
   const tagResult = await runDockerCommand('tag', image, name)
   if (tagResult.exitCode > 0) {
-    throw 'Docker tag failed'
+    throw new Error('Docker tag failed')
   }
   await dockerPush(name)
   return name
