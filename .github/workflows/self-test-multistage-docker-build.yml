@@ -210,9 +210,14 @@ jobs:
 
       - uses: ./
         name: Build without login
+        continue-on-error: true
         id: build
         with:
           context: examples
           repository: ghcr.io/firehed/actions
           stages: env, configured
           server-stage: server
+
+      - name: expect failure
+        if: steps.build.outcome == 'success'
+        run: exit 1
