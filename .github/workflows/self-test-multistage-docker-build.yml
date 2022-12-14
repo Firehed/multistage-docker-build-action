@@ -193,6 +193,7 @@ jobs:
         id: build
         with:
           server-stage: server
+          repository: ghcr.io/firehed/actions
 
       # Above should fail, next step should assert that
 
@@ -212,5 +213,6 @@ jobs:
         id: build
         with:
           context: examples
+          repository: ghcr.io/firehed/actions
           stages: env, configured
           server-stage: server
