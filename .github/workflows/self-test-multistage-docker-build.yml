@@ -181,32 +181,33 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Auth to GH registry
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Auth to GH registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ./
-        name: Build without checkout
+        name: Build with bad settings
         id: build
         with:
+          # No context/dockerfile
           server-stage: server
           repository: ghcr.io/firehed/actions
 
-      # Above should fail, next step should assert that
+      - name: expect failure
+        if: steps.build.outcome == 'success'
+        run: exit 1
 
 
-  # do a valid build without logging in. should make sure push fails and step
-  # fails with it
   expect-error-push-failure:
     name: Action should fail if docker push fails
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Auth to GH registry
+      # Do not log in to docker registry. This will cause the push to fail
 
       - uses: ./
         name: Build without login
