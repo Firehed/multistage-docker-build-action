@@ -13,4 +13,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: yarn install
-      - run: yarn run eslint src
+      - run: yarn lint

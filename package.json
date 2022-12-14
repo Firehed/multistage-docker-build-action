@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build-multistage-docker-build": "ncc build src/index.ts",
-    "build": "yarn run build-multistage-docker-build"
+    "build": "yarn run build-multistage-docker-build",
+    "lint": "yarn run eslint src"
   },
   "repository": "https://github.com/firehed/actions",
   "author": "Eric Stern <eric@ericstern.com>",
