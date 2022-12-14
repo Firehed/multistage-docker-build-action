@@ -10902,6 +10902,7 @@ async function runDockerCommand(command, ...args) {
         }
     };
     const exitCode = await (0, exec_1.exec)('docker', rest, execOptions);
+    core.debug(JSON.stringify(['Docker status code', exitCode, rest]));
     return {
         exitCode,
         stderr,
