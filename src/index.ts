@@ -161,4 +161,4 @@ function getAllPossibleCacheTargets(): string[] {
   return stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)))
 }
 
-run()
+run() // eslint-disable-line
