@@ -31,6 +31,8 @@ export function getFullCommitHash(): string {
 
   if (pullRequestEvents.includes(github.context.eventName)) {
     const prEvent = github.context.payload.pull_request as unknown as any
+    // type limitation in GH context
+    // eslint-disable-next-line
     return prEvent.head.sha
   }
   return github.context.sha
@@ -89,7 +91,7 @@ interface ExecResult {
  * not throw on a nonzero exit code.
  */
 export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
-  let rest: string[] = [command]
+  const rest: string[] = [command]
   if (core.getBooleanInput('quiet') && command !== 'tag') {
     rest.push('--quiet')
   }
