@@ -190,6 +190,7 @@ jobs:
 
       - uses: ./
         name: Build with bad settings
+        continue-on-error: true
         id: build
         with:
           # No context/dockerfile
