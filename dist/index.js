@@ -10834,7 +10834,11 @@ function getFullCommitHash() {
     // For many situations, that results in very confusing mismatches, especially
     // when trying to use commit hashes for build targets
     if (pullRequestEvents.includes(github.context.eventName)) {
+        // type limitation in GH context
+        // eslint-disable-next-line
         const prEvent = github.context.payload.pull_request;
+        // same
+        // eslint-disable-next-line
         return prEvent.head.sha;
     }
     return github.context.sha;
@@ -10883,7 +10887,7 @@ exports.getTaggedImageForStage = getTaggedImageForStage;
  * not throw on a nonzero exit code.
  */
 async function runDockerCommand(command, ...args) {
-    let rest = [command];
+    const rest = [command];
     if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
@@ -10978,11 +10982,14 @@ async function run() {
         await (0, helpers_1.time)('Full Build', build);
     }
     catch (error) {
-        // @ts-ignore
-        core.error(error);
-        core.error(typeof error);
         if (error instanceof Error) {
             core.setFailed(error.message);
+        }
+        else if (typeof error === 'string') {
+            core.setFailed(error);
+        }
+        else {
+            core.setFailed('Unknown error! type: ' + typeof error);
         }
     }
 }
@@ -11058,7 +11065,7 @@ async function buildStage(stage, extraTags) {
         // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
         ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {
-            throw 'Docker build failed';
+            throw new Error('Docker build failed');
         }
         await dockerPush(targetTag);
         for (const extraTag of extraTags) {
@@ -11072,7 +11079,7 @@ async function dockerPush(taggedImage) {
     core.debug(`Pushing ${taggedImage}`);
     const pushResult = await (0, helpers_1.runDockerCommand)('push', taggedImage);
     if (pushResult.exitCode > 0) {
-        throw 'Docker push failed';
+        throw new Error('Docker push failed');
     }
 }
 /**
@@ -11082,7 +11089,7 @@ async function addTagAndPush(image, stage, tag) {
     const name = (0, helpers_1.getTaggedImageForStage)(stage, tag);
     const tagResult = await (0, helpers_1.runDockerCommand)('tag', image, name);
     if (tagResult.exitCode > 0) {
-        throw 'Docker tag failed';
+        throw new Error('Docker tag failed');
     }
     await dockerPush(name);
     return name;
@@ -11092,7 +11099,7 @@ function getAllPossibleCacheTargets() {
     const stages = (0, helpers_1.getAllStages)();
     return stages.flatMap((stage) => tags.map((tag) => (0, helpers_1.getTaggedImageForStage)(stage, tag)));
 }
-run();
+run(); // eslint-disable-line
 
 
 /***/ }),
