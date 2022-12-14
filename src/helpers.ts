@@ -5,13 +5,13 @@ import * as github from '@actions/github'
 // Returns a string like "refs_pull_1_merge-bk1"
 export function getTagForRun(): string {
   const usingBuildkit = process.env.DOCKER_BUILDKIT === '1'
-  const tagFriendlyRef = process.env.GITHUB_REF?.replace(/\//g, '_')
+  const tagFriendlyRef = process.env.GITHUB_REF?.replace(/\//g, '_') as unknown as string
 
   return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`
 }
 
 export function isDefaultBranch(): boolean {
-  const defaultBranch = github.context.payload.repository?.default_branch
+  const defaultBranch = github.context.payload.repository?.default_branch as string
   return github.context.payload.ref === `refs/heads/${defaultBranch}`
 }
 
@@ -30,8 +30,10 @@ export function getFullCommitHash(): string {
   // when trying to use commit hashes for build targets
 
   if (pullRequestEvents.includes(github.context.eventName)) {
-    const prEvent = github.context.payload.pull_request as unknown as any
     // type limitation in GH context
+    // eslint-disable-next-line
+    const prEvent = github.context.payload.pull_request as unknown as any
+    // same
     // eslint-disable-next-line
     return prEvent.head.sha
   }
