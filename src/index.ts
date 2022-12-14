@@ -19,6 +19,9 @@ async function run(): Promise<void> {
     )
     await time('Full Build', build)
   } catch (error) {
+    // @ts-ignore
+    core.error(error)
+    core.error(typeof error)
     if (error instanceof Error) {
       core.setFailed(error.message)
     }

@@ -10978,6 +10978,9 @@ async function run() {
         await (0, helpers_1.time)('Full Build', build);
     }
     catch (error) {
+        // @ts-ignore
+        core.error(error);
+        core.error(typeof error);
         if (error instanceof Error) {
             core.setFailed(error.message);
         }
