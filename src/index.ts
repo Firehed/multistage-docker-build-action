@@ -98,7 +98,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
   return time(`Build ${stage}`, async () => {
     core.startGroup(`Building stage: ${stage}`)
 
-    const buildCommand = shouldBuildInParallel() ? 'buildx' : 'build'
+    const buildCommand = shouldBuildInParallel() ? 'buildx build' : 'build'
 
     const dockerfile = core.getInput('dockerfile')
     const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile]

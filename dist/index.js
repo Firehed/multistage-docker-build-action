@@ -11058,7 +11058,7 @@ async function build() {
 async function buildStage(stage, extraTags) {
     return (0, helpers_1.time)(`Build ${stage}`, async () => {
         core.startGroup(`Building stage: ${stage}`);
-        const buildCommand = (0, helpers_1.shouldBuildInParallel)() ? 'buildx' : 'build';
+        const buildCommand = (0, helpers_1.shouldBuildInParallel)() ? 'buildx build' : 'build';
         const dockerfile = core.getInput('dockerfile');
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
