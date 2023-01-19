@@ -30,6 +30,10 @@ jobs:
       - name: generate file change
         run: echo $GITHUB_SHA > file.txt
 
+      - run: docker buildx version
+      - run: docker buildx help
+      - run: docker buildx build help
+
       - uses: ./
         id: build
         with:
