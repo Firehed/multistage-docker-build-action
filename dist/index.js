@@ -10893,6 +10893,7 @@ exports.getTaggedImageForStage = getTaggedImageForStage;
  */
 async function runDockerCommand(command, ...args) {
     const rest = [command];
+    core.info(JSON.stringify(args));
     if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
