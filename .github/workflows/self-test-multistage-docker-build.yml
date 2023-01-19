@@ -33,7 +33,7 @@ jobs:
       - uses: ./
         id: build
         with:
-          build-args: BUILD_ARG_1=hello, BUILD_ARG_2=goodbye, version=${{ github.sha }}
+          build-args: BUILD_ARG_1=hello
           dockerfile: examples/Dockerfile
           repository: ghcr.io/firehed/actions
           server-stage: server
