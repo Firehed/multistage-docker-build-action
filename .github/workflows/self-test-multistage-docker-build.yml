@@ -32,7 +32,7 @@ jobs:
 
       - run: docker buildx version
       - run: docker buildx help
-      - run: docker buildx build help
+      - run: docker buildx build --help
 
       - uses: ./
         id: build
