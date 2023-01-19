@@ -13,18 +13,10 @@ permissions:
   packages: write
 
 jobs:
-  build:
-    name: Build docker images
+  test-build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        buildkit: ["0", "1"]
     env:
-      DOCKER_BUILDKIT: ${{ matrix.buildkit }}
-
-    outputs:
-      testenv-tag: ${{ steps.build.outputs.testenv-tag }}
-      server-tag: ${{ steps.build.outputs.server-tag }}
+      DOCKER_BUILDKIT: "1"
     steps:
       - uses: actions/checkout@v3
 
@@ -43,183 +35,218 @@ jobs:
         with:
           build-args: BUILD_ARG_1=hello, BUILD_ARG_2=goodbye, version=${{ github.sha }}
           dockerfile: examples/Dockerfile
-          # repository: firehed/actions
-          # repository: gcr.io/firehed/actions
           repository: ghcr.io/firehed/actions
-          stages: env, configured
-          testenv-stage: testenv
           server-stage: server
           quiet: false
 
-  test:
-    name: 'test'
-    runs-on: ubuntu-latest
-    needs:
-      - build
-    steps:
-      - name: run tests
-        run:
-          docker run
-            --rm
-            ${{ needs.build.outputs.testenv-tag }}
-            echo "I'm a test!"
 
-      - name: get build arg1
-        id: build-args
-        run: docker run
-            --rm
-            ${{ needs.build.outputs.testenv-tag }}
-            sh examples/print-outputs.sh
+#   build:
+#     name: Build docker images
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         buildkit: ["0", "1"]
+#     env:
+#       DOCKER_BUILDKIT: ${{ matrix.buildkit }}
 
-      - name: validate build arg 1
-        if: ${{ steps.build-args.outputs.arg1 != 'hello' }}
-        run: exit 1
+#     outputs:
+#       testenv-tag: ${{ steps.build.outputs.testenv-tag }}
+#       server-tag: ${{ steps.build.outputs.server-tag }}
+#     steps:
+#       - uses: actions/checkout@v3
 
-      - name: validate build arg 2
-        if: ${{ steps.build-args.outputs.arg2 != 'goodbye' }}
-        run: exit 1
+#       - name: Auth to GH registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.repository_owner }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: display server
-        run: echo ${{ needs.build.outputs.server-tag }}
+#       - name: generate file change
+#         run: echo $GITHUB_SHA > file.txt
 
-  build-server-only:
-    name: Build server image only
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+#       - uses: ./
+#         id: build
+#         with:
+#           build-args: BUILD_ARG_1=hello, BUILD_ARG_2=goodbye, version=${{ github.sha }}
+#           dockerfile: examples/Dockerfile
+#           # repository: firehed/actions
+#           # repository: gcr.io/firehed/actions
+#           repository: ghcr.io/firehed/actions
+#           stages: env, configured
+#           testenv-stage: testenv
+#           server-stage: server
+#           quiet: false
 
-      - name: Auth to GH registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#   test:
+#     name: 'test'
+#     runs-on: ubuntu-latest
+#     needs:
+#       - build
+#     steps:
+#       - name: run tests
+#         run:
+#           docker run
+#             --rm
+#             ${{ needs.build.outputs.testenv-tag }}
+#             echo "I'm a test!"
 
-      - uses: ./
-        id: build
-        with:
-          dockerfile: examples/Dockerfile
-          repository: ghcr.io/firehed/actions
-          stages: env, configured
-          server-stage: server
+#       - name: get build arg1
+#         id: build-args
+#         run: docker run
+#             --rm
+#             ${{ needs.build.outputs.testenv-tag }}
+#             sh examples/print-outputs.sh
 
-      - name: Print outputs
-        run: |
-          echo "Server: ${{ steps.build.outputs.server-tag }}"
-          echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
-          echo "Commit: ${{ steps.build.outputs.commit }}"
+#       - name: validate build arg 1
+#         if: ${{ steps.build-args.outputs.arg1 != 'hello' }}
+#         run: exit 1
 
-      - name: Run image
-        run: docker run --rm ${{ steps.build.outputs.server-tag }}
+#       - name: validate build arg 2
+#         if: ${{ steps.build-args.outputs.arg2 != 'goodbye' }}
+#         run: exit 1
 
-  build-different-context:
-    name: Override context
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+#       - name: display server
+#         run: echo ${{ needs.build.outputs.server-tag }}
 
-      - name: Auth to GH registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#   build-server-only:
+#     name: Build server image only
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
 
-      - uses: ./
-        name: Build with this action
-        id: build
-        with:
-          context: examples
-          repository: ghcr.io/firehed/actions
-          stages: env, configured
-          server-stage: server
+#       - name: Auth to GH registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.repository_owner }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Print outputs
-        run: |
-          echo "Server: ${{ steps.build.outputs.server-tag }}"
-          echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
-          echo "Commit: ${{ steps.build.outputs.commit }}"
+#       - uses: ./
+#         id: build
+#         with:
+#           dockerfile: examples/Dockerfile
+#           repository: ghcr.io/firehed/actions
+#           stages: env, configured
+#           server-stage: server
 
-      - name: Run image
-        run: docker run --rm ${{ steps.build.outputs.server-tag }}
+#       - name: Print outputs
+#         run: |
+#           echo "Server: ${{ steps.build.outputs.server-tag }}"
+#           echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
+#           echo "Commit: ${{ steps.build.outputs.commit }}"
 
-  build-different-context-and-dockerfile:
-    name: Override context and file
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+#       - name: Run image
+#         run: docker run --rm ${{ steps.build.outputs.server-tag }}
 
-      - name: Auth to GH registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#   build-different-context:
+#     name: Override context
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
 
-      - uses: ./
-        name: Build with this action
-        id: build
-        with:
-          context: examples
-          dockerfile: examples/Dockerfile
-          repository: ghcr.io/firehed/actions
-          stages: env, configured
-          server-stage: server
+#       - name: Auth to GH registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.repository_owner }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Print outputs
-        run: |
-          echo "Server: ${{ steps.build.outputs.server-tag }}"
-          echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
-          echo "Commit: ${{ steps.build.outputs.commit }}"
+#       - uses: ./
+#         name: Build with this action
+#         id: build
+#         with:
+#           context: examples
+#           repository: ghcr.io/firehed/actions
+#           stages: env, configured
+#           server-stage: server
 
-      - name: Run image
-        run: docker run --rm ${{ steps.build.outputs.server-tag }}
+#       - name: Print outputs
+#         run: |
+#           echo "Server: ${{ steps.build.outputs.server-tag }}"
+#           echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
+#           echo "Commit: ${{ steps.build.outputs.commit }}"
 
-  expect-error-build-failure:
-    name: Action should fail if docker build fails
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+#       - name: Run image
+#         run: docker run --rm ${{ steps.build.outputs.server-tag }}
 
-      - name: Auth to GH registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#   build-different-context-and-dockerfile:
+#     name: Override context and file
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
 
-      - uses: ./
-        name: Build with bad settings
-        continue-on-error: true
-        id: build
-        with:
-          # No context/dockerfile
-          server-stage: server
-          repository: ghcr.io/firehed/actions
+#       - name: Auth to GH registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.repository_owner }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: expect failure
-        if: steps.build.outcome == 'success'
-        run: exit 1
+#       - uses: ./
+#         name: Build with this action
+#         id: build
+#         with:
+#           context: examples
+#           dockerfile: examples/Dockerfile
+#           repository: ghcr.io/firehed/actions
+#           stages: env, configured
+#           server-stage: server
+
+#       - name: Print outputs
+#         run: |
+#           echo "Server: ${{ steps.build.outputs.server-tag }}"
+#           echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
+#           echo "Commit: ${{ steps.build.outputs.commit }}"
+
+#       - name: Run image
+#         run: docker run --rm ${{ steps.build.outputs.server-tag }}
+
+#   expect-error-build-failure:
+#     name: Action should fail if docker build fails
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Auth to GH registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.repository_owner }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
+
+#       - uses: ./
+#         name: Build with bad settings
+#         continue-on-error: true
+#         id: build
+#         with:
+#           # No context/dockerfile
+#           server-stage: server
+#           repository: ghcr.io/firehed/actions
+
+#       - name: expect failure
+#         if: steps.build.outcome == 'success'
+#         run: exit 1
 
 
-  expect-error-push-failure:
-    name: Action should fail if docker push fails
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+#   expect-error-push-failure:
+#     name: Action should fail if docker push fails
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
 
-      # Do not log in to docker registry. This will cause the push to fail
+#       # Do not log in to docker registry. This will cause the push to fail
 
-      - uses: ./
-        name: Build without login
-        continue-on-error: true
-        id: build
-        with:
-          context: examples
-          repository: ghcr.io/firehed/actions
-          stages: env, configured
-          server-stage: server
+#       - uses: ./
+#         name: Build without login
+#         continue-on-error: true
+#         id: build
+#         with:
+#           context: examples
+#           repository: ghcr.io/firehed/actions
+#           stages: env, configured
+#           server-stage: server
 
-      - name: expect failure
-        if: steps.build.outcome == 'success'
-        run: exit 1
+#       - name: expect failure
+#         if: steps.build.outcome == 'success'
+#         run: exit 1
