@@ -10,6 +10,11 @@ export function getTagForRun(): string {
   return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`
 }
 
+export function shouldBuildInParallel(): boolean {
+  // This may become more directly configurable
+  return process.env.DOCKER_BUILDKIT === '1'
+}
+
 export function isDefaultBranch(): boolean {
   const defaultBranch = github.context.payload.repository?.default_branch as string
   return github.context.payload.ref === `refs/heads/${defaultBranch}`
@@ -80,7 +85,7 @@ export function getTaggedImageForStage(stage: string, tag: string): string {
   return `${image}:${tag}`
 }
 
-type DockerCommand = 'pull' | 'push' | 'build' | 'tag'
+type DockerCommand = 'pull' | 'push' | 'build' | 'tag' | 'buildx'
 
 interface ExecResult {
   exitCode: number

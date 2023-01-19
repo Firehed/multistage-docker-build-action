@@ -10803,7 +10803,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.time = exports.runDockerCommand = exports.getTaggedImageForStage = exports.getAllStages = exports.getBuildArgs = exports.getBaseStages = exports.getFullCommitHash = exports.isDefaultBranch = exports.getTagForRun = void 0;
+exports.time = exports.runDockerCommand = exports.getTaggedImageForStage = exports.getAllStages = exports.getBuildArgs = exports.getBaseStages = exports.getFullCommitHash = exports.isDefaultBranch = exports.shouldBuildInParallel = exports.getTagForRun = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const github = __importStar(__nccwpck_require__(5438));
@@ -10815,6 +10815,11 @@ function getTagForRun() {
     return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`;
 }
 exports.getTagForRun = getTagForRun;
+function shouldBuildInParallel() {
+    // This may become more directly configurable
+    return process.env.DOCKER_BUILDKIT === '1';
+}
+exports.shouldBuildInParallel = shouldBuildInParallel;
 function isDefaultBranch() {
     var _a;
     const defaultBranch = (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.default_branch;
@@ -11053,6 +11058,7 @@ async function build() {
 async function buildStage(stage, extraTags) {
     return (0, helpers_1.time)(`Build ${stage}`, async () => {
         core.startGroup(`Building stage: ${stage}`);
+        const buildCommand = (0, helpers_1.shouldBuildInParallel)() ? 'buildx' : 'build';
         const dockerfile = core.getInput('dockerfile');
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
@@ -11060,7 +11066,7 @@ async function buildStage(stage, extraTags) {
             .flatMap(target => ['--cache-from', target]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
             .flatMap(arg => ['--build-arg', arg]);
-        const result = await (0, helpers_1.runDockerCommand)('build', 
+        const result = await (0, helpers_1.runDockerCommand)(buildCommand, 
         // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
         ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {

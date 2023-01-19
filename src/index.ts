@@ -9,6 +9,7 @@ import {
   getAllStages,
   getTaggedImageForStage,
   runDockerCommand,
+  shouldBuildInParallel,
   time,
 } from './helpers'
 
@@ -97,6 +98,8 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
   return time(`Build ${stage}`, async () => {
     core.startGroup(`Building stage: ${stage}`)
 
+    const buildCommand = shouldBuildInParallel() ? 'buildx' : 'build'
+
     const dockerfile = core.getInput('dockerfile')
     const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile]
 
@@ -109,7 +112,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       .flatMap(arg => ['--build-arg', arg])
 
     const result = await runDockerCommand(
-      'build',
+      buildCommand,
       // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
       ...buildArgs,
       ...cacheFromArg,
