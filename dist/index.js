@@ -10911,7 +10911,9 @@ async function runDockerCommand(command, ...args) {
             },
         }
     };
-    const exitCode = await (0, exec_1.exec)('docker', rest, execOptions);
+    // const exitCode = await exec('docker', rest, execOptions)
+    const cmd = 'docker ' + (rest.join(' '));
+    const exitCode = await (0, exec_1.exec)(cmd, [], execOptions);
     return {
         exitCode,
         stderr,
