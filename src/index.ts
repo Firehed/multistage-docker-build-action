@@ -104,7 +104,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
     const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
     const cacheFromArg = getAllPossibleCacheTargets()
-      .flatMap(target => ['--cache-from', target])
+      .flatMap(target => ['--cache-from', `type=registry,ref=${target}`])
 
     const buildArgs = getBuildArgs()
       .flatMap(arg => ['--build-arg', arg])

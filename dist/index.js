@@ -11066,7 +11066,7 @@ async function buildStage(stage, extraTags) {
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
         const cacheFromArg = getAllPossibleCacheTargets()
-            .flatMap(target => ['--cache-from', target]);
+            .flatMap(target => ['--cache-from', `type=registry,ref=${target}`]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
             .flatMap(arg => ['--build-arg', arg]);
         if ((0, helpers_1.shouldBuildInParallel)()) {
