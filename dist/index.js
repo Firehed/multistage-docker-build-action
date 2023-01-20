@@ -10893,6 +10893,9 @@ exports.getTaggedImageForStage = getTaggedImageForStage;
  */
 async function runDockerCommand(command, ...args) {
     const rest = [command];
+    if (command === 'build' && shouldBuildInParallel()) {
+        rest.unshift('buildx');
+    }
     core.info(JSON.stringify(args));
     if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
@@ -10911,9 +10914,7 @@ async function runDockerCommand(command, ...args) {
             },
         }
     };
-    // const exitCode = await exec('docker', rest, execOptions)
-    const cmd = 'docker ' + (rest.join(' '));
-    const exitCode = await (0, exec_1.exec)(cmd, [], execOptions);
+    const exitCode = await (0, exec_1.exec)('docker', rest, execOptions);
     return {
         exitCode,
         stderr,
@@ -11061,7 +11062,6 @@ async function build() {
 async function buildStage(stage, extraTags) {
     return (0, helpers_1.time)(`Build ${stage}`, async () => {
         core.startGroup(`Building stage: ${stage}`);
-        const buildCommand = (0, helpers_1.shouldBuildInParallel)() ? 'buildx build' : 'build';
         const dockerfile = core.getInput('dockerfile');
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
@@ -11069,7 +11069,7 @@ async function buildStage(stage, extraTags) {
             .flatMap(target => ['--cache-from', target]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
             .flatMap(arg => ['--build-arg', arg]);
-        const result = await (0, helpers_1.runDockerCommand)(buildCommand, 
+        const result = await (0, helpers_1.runDockerCommand)('build', 
         // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
         ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {

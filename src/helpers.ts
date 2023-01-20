@@ -99,6 +99,9 @@ interface ExecResult {
  */
 export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
   const rest: string[] = [command]
+  if (command === 'build' && shouldBuildInParallel()) {
+    rest.unshift('buildx')
+  }
   core.info(JSON.stringify(args))
   if (core.getBooleanInput('quiet') && command !== 'tag') {
     rest.push('--quiet')
@@ -119,10 +122,7 @@ export async function runDockerCommand(command: DockerCommand, ...args: string[]
       },
     }
   }
-  // const exitCode = await exec('docker', rest, execOptions)
-
-  const cmd = 'docker ' + (rest.join(' '))
-  const exitCode = await exec(cmd, [], execOptions)
+  const exitCode = await exec('docker', rest, execOptions)
 
   return {
     exitCode,
