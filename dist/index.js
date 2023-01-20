@@ -10894,13 +10894,13 @@ exports.getTaggedImageForStage = getTaggedImageForStage;
 async function runDockerCommand(command, ...args) {
     const rest = [command];
     if (command === 'build' && shouldBuildInParallel()) {
-        rest.unshift('buildx');
+        rest.push('buildx');
     }
-    core.info(JSON.stringify(args));
     if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
     rest.push(...args);
+    core.info(JSON.stringify(rest));
     let stdout = '';
     let stderr = '';
     const execOptions = {
