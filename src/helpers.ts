@@ -100,7 +100,7 @@ interface ExecResult {
 export async function runDockerCommand(command: DockerCommand, ...args: string[]): Promise<ExecResult> {
   const rest: string[] = [command]
   if (command === 'build' && shouldBuildInParallel()) {
-    rest.push('buildx')
+    rest.unshift('buildx')
   }
   if (core.getBooleanInput('quiet') && command !== 'tag') {
     rest.push('--quiet')
