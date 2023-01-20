@@ -85,7 +85,7 @@ export function getTaggedImageForStage(stage: string, tag: string): string {
   return `${image}:${tag}`
 }
 
-type DockerCommand = 'pull' | 'push' | 'build' | 'tag' | 'buildx build'
+type DockerCommand = 'pull' | 'push' | 'build' | 'tag'
 
 interface ExecResult {
   exitCode: number
