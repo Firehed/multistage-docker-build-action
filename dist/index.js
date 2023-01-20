@@ -11062,20 +11062,18 @@ async function build() {
 async function buildStage(stage, extraTags) {
     return (0, helpers_1.time)(`Build ${stage}`, async () => {
         core.startGroup(`Building stage: ${stage}`);
+        const useBuildx = (0, helpers_1.shouldBuildInParallel)();
         const dockerfile = core.getInput('dockerfile');
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
         const cacheFromArg = getAllPossibleCacheTargets()
-            .flatMap(target => ['--cache-from', `type=registry,ref=${target}`]);
+            .flatMap(target => ['--cache-from', useBuildx
+                ? `type=registry,ref=${target}`
+                : target
+        ]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
             .flatMap(arg => ['--build-arg', arg]);
-        (0, helpers_1.shouldBuildInParallel)();
-        // if (shouldBuildInParallel()) {
-        //   buildArgs.push('--build-arg', 'BUILDKIT_INLINE_CACHE=1')
-        // }
-        const result = await (0, helpers_1.runDockerCommand)('build', 
-        // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-        ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
+        const result = await (0, helpers_1.runDockerCommand)('build', ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {
             throw new Error('Docker build failed');
         }
