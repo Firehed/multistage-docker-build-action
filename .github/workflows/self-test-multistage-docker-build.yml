@@ -30,11 +30,6 @@ jobs:
       - name: generate file change
         run: echo $GITHUB_SHA > file.txt
 
-      - run: docker buildx version
-      - run: docker buildx help
-      - run: docker buildx build --help
-      - run: docker buildx build --build-arg BUILD_ARG_1=hello --cache-from ghcr.io/firehed/actions/server:refs_pull_39_merge-bk1 --cache-from ghcr.io/firehed/actions/server:latest --file examples/Dockerfile --tag ghcr.io/firehed/actions/server:refs_pull_39_merge-bk1 --target server .
-
       - uses: ./
         id: build
         with:
