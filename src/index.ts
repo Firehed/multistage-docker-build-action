@@ -113,7 +113,10 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
 
     const buildArgs = getBuildArgs()
       .flatMap(arg => ['--build-arg', arg])
-    
+    if (useBuildx) {
+      buildArgs.push('--build-arg', 'BUILDKIT_INLINE_CACHE=1')
+    }
+
     const result = await runDockerCommand(
       'build',
       ...buildArgs,

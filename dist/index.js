@@ -11073,6 +11073,9 @@ async function buildStage(stage, extraTags) {
         ]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
             .flatMap(arg => ['--build-arg', arg]);
+        if (useBuildx) {
+            buildArgs.push('--build-arg', 'BUILDKIT_INLINE_CACHE=1');
+        }
         const result = await (0, helpers_1.runDockerCommand)('build', ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {
             throw new Error('Docker build failed');
