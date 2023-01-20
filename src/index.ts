@@ -109,7 +109,7 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       .flatMap(target => ['--cache-from', target])
 
     const buildArgs = getBuildArgs()
-      .flatMap(arg => ['--build-arg', arg])
+      .map(arg => `--build-arg ${arg}`)
 
     const result = await runDockerCommand(
       buildCommand,
