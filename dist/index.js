@@ -11068,7 +11068,7 @@ async function buildStage(stage, extraTags) {
         const cacheFromArg = getAllPossibleCacheTargets()
             .flatMap(target => ['--cache-from', target]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
-            .map(arg => `--build-arg ${arg}`);
+            .flatMap(arg => ['--build-arg', arg]);
         const result = await (0, helpers_1.runDockerCommand)(buildCommand, 
         // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
         ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
