@@ -197,7 +197,7 @@ jobs:
           repository: ghcr.io/firehed/actions
           stages: env, configured
           server-stage: server
-          testenv-tag: testenv
+          testenv-stage: testenv
           commit: my-special-tag
 
       - name: Print outputs
@@ -214,10 +214,10 @@ jobs:
         run: exit 1
 
       - name: check commit was used in server-tag
-        if: steps.build.outputs.server-tag != 'my-special-tag'
+        if: steps.build.outputs.server-tag != 'ghcr.io/firehed/actions/server:my-special-tag'
         run: exit 1
       - name: check commit was used in testenv-tag
-        if: steps.build.outputs.testenv-tag  != 'my-special-tag'
+        if: steps.build.outputs.testenv-tag != 'ghcr.io/firehed/actions/testenv:my-special-tag'
         run: exit 1
 
   expect-error-build-failure:
