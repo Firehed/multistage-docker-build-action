@@ -25,6 +25,7 @@ While the action allows many stages to be pushed to the registry for future re-u
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
 | `build-args` | no | | Comma-separated list of `--build-arg` flags. |
+| `commit` | no | | Optional override for the build output tags. By default, the full 40-character commit SHA will be used (and inferred from the `pull_request` or `push` context). This is useful for manual builds, or if you want a different image tagging format. |
 
 ## Outputs
 
@@ -96,8 +97,8 @@ The following images will exist:
 The intended use-case is that the `testenv` will be used for further testing in CI, and the `server` will eventually be deployed.
 You may want remove the intermediate branch images when the branch is closed to save on storage.
 
-The following images will also be created, but they are for internal use only (relating to layer caching).
-You should not use, deploy, or otherwise depend on them - they may change at any time!
+The following images will also be created, but they are for **internal use only** (relating to layer caching).
+You **should not** use, deploy, or otherwise depend on them - they may change at any time!
 
 - `ghcr.io/firehed/actions/env:{branch-related-name}`
 - `ghcr.io/firehed/actions/configured:{branch-related-name}`

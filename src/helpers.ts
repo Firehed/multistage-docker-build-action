@@ -3,6 +3,8 @@ import { exec } from '@actions/exec'
 import * as github from '@actions/github'
 
 // Returns a string like "refs_pull_1_merge-bk1"
+// This is FOR INTERNAL USE ONLY - if you're reading the action source code
+// wondering where some tags come from, **DO NOT DEPLOY THESE**.
 export function getTagForRun(): string {
   const usingBuildkit = process.env.DOCKER_BUILDKIT === '1'
   const tagFriendlyRef = process.env.GITHUB_REF?.replace(/\//g, '_') as unknown as string
@@ -14,14 +16,22 @@ export function isDefaultBranch(): boolean {
   const defaultBranch = github.context.payload.repository?.default_branch as string
   return github.context.payload.ref === `refs/heads/${defaultBranch}`
 }
-
+export function getCommitTag(): string
+{
+  const providedTag = core.getInput('commit').trim()
+  if (providedTag !== '') {
+    return providedTag
+  }
+  return getFullCommitHash()
+}
 
 const pullRequestEvents = [
   'pull_request',
   'pull_request_review',
   'pull_request_review_comment',
 ]
-export function getFullCommitHash(): string {
+
+function getFullCommitHash(): string {
   // Github runs actions triggered by PRs on a merge commit. This populates
   // GITHUB_SHA and related fields with the merge commit hash, rather than the
   // hash of the commit that triggered the PR.

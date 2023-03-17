@@ -33,6 +33,10 @@ inputs:
   testenv-stage:
     required: false
     description: Docker target for testing
+  commit:
+    required: false
+    default: ''
+    description: If provided, this value will be used for the output image tags instead of the inferred one from the action context. Generally only useful for manual runs not triggered by push or pull_request events.
   quiet:
     required: false
     default: true
@@ -40,7 +44,7 @@ inputs:
 
 outputs:
   commit:
-    description: The full commit hash used for tags
+    description: The full commit hash used for tags. This will match the input paramter of the same name if it was provided.
   server-tag:
     description: Commit-specific tag for server
   testenv-tag:

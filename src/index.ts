@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 
 import {
   isDefaultBranch,
-  getFullCommitHash,
+  getCommitTag,
   getTagForRun,
   getBuildArgs,
   getBaseStages,
@@ -66,8 +66,8 @@ async function build(): Promise<void> {
     await buildStage(stage, isDefaultBranch() ? ['latest'] : [])
   }
 
-  const hash = getFullCommitHash()
-  const extraTags = [hash]
+  const commitTag = getCommitTag()
+  const extraTags = [commitTag]
   if (isDefaultBranch() && core.getBooleanInput('tag-latest-on-default')) {
     extraTags.push('latest')
   }
@@ -78,15 +78,15 @@ async function build(): Promise<void> {
     core.info('testenv-stage not set; skipping build')
   } else {
     await buildStage(testStage, extraTags)
-    core.setOutput('testenv-tag', getTaggedImageForStage(testStage, hash))
+    core.setOutput('testenv-tag', getTaggedImageForStage(testStage, commitTag))
   }
 
   // Build the server env
   const serverStage = core.getInput('server-stage').trim()
   await buildStage(serverStage, extraTags)
-  core.setOutput('server-tag', getTaggedImageForStage(serverStage, hash))
+  core.setOutput('server-tag', getTaggedImageForStage(serverStage, commitTag))
 
-  core.setOutput('commit', hash)
+  core.setOutput('commit', commitTag)
 }
 
 /**
