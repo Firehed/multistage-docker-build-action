@@ -175,6 +175,51 @@ jobs:
       - name: Run image
         run: docker run --rm ${{ steps.build.outputs.server-tag }}
 
+  build-with-commit-override:
+    name: Override commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Auth to GH registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./
+        name: Build with this action
+        id: build
+        with:
+          context: examples
+          dockerfile: examples/Dockerfile
+          repository: ghcr.io/firehed/actions
+          stages: env, configured
+          server-stage: server
+          testenv-tag: testenv
+          commit: my-special-tag
+
+      - name: Print outputs
+        run: |
+          echo "Server: ${{ steps.build.outputs.server-tag }}"
+          echo "Testenv: ${{ steps.build.outputs.testenv-tag }}"
+          echo "Commit: ${{ steps.build.outputs.commit }}"
+
+      - name: Run image
+        run: docker run --rm ${{ steps.build.outputs.server-tag }}
+
+      - name: check commit was used in output
+        if: steps.build.outputs.commit != 'my-special-tag'
+        run: exit 1
+
+      - name: check commit was used in server-tag
+        if: steps.build.outputs.server-tag != 'my-special-tag'
+        run: exit 1
+      - name: check commit was used in testenv-tag
+        if: steps.build.outputs.testenv-tag  != 'my-special-tag'
+        run: exit 1
+
   expect-error-build-failure:
     name: Action should fail if docker build fails
     runs-on: ubuntu-latest
