@@ -10803,11 +10803,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.time = exports.runDockerCommand = exports.getTaggedImageForStage = exports.getAllStages = exports.getBuildArgs = exports.getBaseStages = exports.getFullCommitHash = exports.isDefaultBranch = exports.getTagForRun = void 0;
+exports.time = exports.runDockerCommand = exports.getTaggedImageForStage = exports.getAllStages = exports.getBuildArgs = exports.getBaseStages = exports.getCommitTag = exports.isDefaultBranch = exports.getTagForRun = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const github = __importStar(__nccwpck_require__(5438));
 // Returns a string like "refs_pull_1_merge-bk1"
+// This is FOR INTERNAL USE ONLY - if you're reading the action source code
+// wondering where some tags come from, **DO NOT DEPLOY THESE**.
 function getTagForRun() {
     var _a;
     const usingBuildkit = process.env.DOCKER_BUILDKIT === '1';
@@ -10821,6 +10823,14 @@ function isDefaultBranch() {
     return github.context.payload.ref === `refs/heads/${defaultBranch}`;
 }
 exports.isDefaultBranch = isDefaultBranch;
+function getCommitTag() {
+    const providedTag = core.getInput('commit').trim();
+    if (providedTag !== '') {
+        return providedTag;
+    }
+    return getFullCommitHash();
+}
+exports.getCommitTag = getCommitTag;
 const pullRequestEvents = [
     'pull_request',
     'pull_request_review',
@@ -10843,7 +10853,6 @@ function getFullCommitHash() {
     }
     return github.context.sha;
 }
-exports.getFullCommitHash = getFullCommitHash;
 function getBaseStages() {
     return core.getInput('stages')
         .split(',')
@@ -11026,8 +11035,8 @@ async function build() {
         // branches to have a reasonable chance at a cache hit
         await buildStage(stage, (0, helpers_1.isDefaultBranch)() ? ['latest'] : []);
     }
-    const hash = (0, helpers_1.getFullCommitHash)();
-    const extraTags = [hash];
+    const commitTag = (0, helpers_1.getCommitTag)();
+    const extraTags = [commitTag];
     if ((0, helpers_1.isDefaultBranch)() && core.getBooleanInput('tag-latest-on-default')) {
         extraTags.push('latest');
     }
@@ -11038,13 +11047,13 @@ async function build() {
     }
     else {
         await buildStage(testStage, extraTags);
-        core.setOutput('testenv-tag', (0, helpers_1.getTaggedImageForStage)(testStage, hash));
+        core.setOutput('testenv-tag', (0, helpers_1.getTaggedImageForStage)(testStage, commitTag));
     }
     // Build the server env
     const serverStage = core.getInput('server-stage').trim();
     await buildStage(serverStage, extraTags);
-    core.setOutput('server-tag', (0, helpers_1.getTaggedImageForStage)(serverStage, hash));
-    core.setOutput('commit', hash);
+    core.setOutput('server-tag', (0, helpers_1.getTaggedImageForStage)(serverStage, commitTag));
+    core.setOutput('commit', commitTag);
 }
 /**
  * Runs docker build commands targeting the specified stage, and returns
