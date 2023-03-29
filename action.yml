@@ -17,6 +17,10 @@ inputs:
     description: Path to Dockerfile
     required: false
     default: ''
+  parallel:
+    description: Build in parallel
+    required: false
+    default: false
   repository:
     required: true
     description: Repository that all of the images and tags will pull from and push to

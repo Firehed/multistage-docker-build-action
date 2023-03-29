@@ -11,8 +11,15 @@ export function getTagForRun(): string {
 }
 
 export function shouldBuildInParallel(): boolean {
-  // This may become more directly configurable
-  return process.env.DOCKER_BUILDKIT === '1'
+  // Respect
+  if (process.env.DOCKER_BUILDKIT === '1') {
+    core.debug('Building in parallel due to DOCKER_BUILDKIT=1')
+    return true
+  } else if (process.env.DOCKER_BUILDKIT === '0') {
+    core.debug('Not building in parallel due to DOCKER_BUILDKIT=0')
+    return false
+  }
+  return core.getBooleanInput('parallel')
 }
 
 export function isDefaultBranch(): boolean {
