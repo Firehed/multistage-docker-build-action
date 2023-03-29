@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   test-build-parallel-setting:
+    name: Parallel via setting
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -42,6 +43,7 @@ jobs:
           quiet: false
 
   test-build-parallel-buildkit:
+    name: Parallel via DOCKER_BUILDKIT
     runs-on: ubuntu-latest
     env:
       DOCKER_BUILDKIT: "1"
@@ -66,7 +68,6 @@ jobs:
           repository: ghcr.io/firehed/actions
           server-stage: server
           quiet: false
-
 
   build:
     name: Build docker images
