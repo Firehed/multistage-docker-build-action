@@ -4,14 +4,14 @@ import * as github from '@actions/github'
 
 // Returns a string like "refs_pull_1_merge-bk1"
 export function getTagForRun(): string {
-  const usingBuildkit = process.env.DOCKER_BUILDKIT === '1'
+  const parallel = shouldBuildInParallel()
   const tagFriendlyRef = process.env.GITHUB_REF?.replace(/\//g, '_') as unknown as string
 
-  return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`
+  return `${tagFriendlyRef}-bk${parallel ? '1' : '0'}`
 }
 
 export function shouldBuildInParallel(): boolean {
-  // Respect
+  // Respect DOCKER_BUILDKIT, if set.
   if (process.env.DOCKER_BUILDKIT === '1') {
     core.debug('Building in parallel due to DOCKER_BUILDKIT=1')
     return true
