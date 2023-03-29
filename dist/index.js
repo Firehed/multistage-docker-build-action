@@ -10810,14 +10810,22 @@ const github = __importStar(__nccwpck_require__(5438));
 // Returns a string like "refs_pull_1_merge-bk1"
 function getTagForRun() {
     var _a;
-    const usingBuildkit = process.env.DOCKER_BUILDKIT === '1';
+    const parallel = shouldBuildInParallel();
     const tagFriendlyRef = (_a = process.env.GITHUB_REF) === null || _a === void 0 ? void 0 : _a.replace(/\//g, '_');
-    return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`;
+    return `${tagFriendlyRef}-bk${parallel ? '1' : '0'}`;
 }
 exports.getTagForRun = getTagForRun;
 function shouldBuildInParallel() {
-    // This may become more directly configurable
-    return process.env.DOCKER_BUILDKIT === '1';
+    // Respect DOCKER_BUILDKIT, if set.
+    if (process.env.DOCKER_BUILDKIT === '1') {
+        core.debug('Building in parallel due to DOCKER_BUILDKIT=1');
+        return true;
+    }
+    else if (process.env.DOCKER_BUILDKIT === '0') {
+        core.debug('Not building in parallel due to DOCKER_BUILDKIT=0');
+        return false;
+    }
+    return core.getBooleanInput('parallel');
 }
 exports.shouldBuildInParallel = shouldBuildInParallel;
 function isDefaultBranch() {
