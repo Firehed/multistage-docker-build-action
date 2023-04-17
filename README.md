@@ -24,7 +24,24 @@ While the action allows many stages to be pushed to the registry for future re-u
 | `context` | no | `.` | Build context |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
 | `quiet` | no | `true` | Should docker commands be passed `--quiet` |
+| `parallel` | no | `false` | Should stages be built in parallel (via BuildX) |
 | `build-args` | no | | Comma-separated list of `--build-arg` flags. |
+
+### Parallel builds
+The new `parallel` option, added in `v1.7`, defaults to off.
+In the next major version (v2), it will default to on.
+
+Changing to the opposite build mode, either implicitly or explicitly, *will break your layer cache for the first build*.
+The internal image formats are incompatible, and are tagged accordingly to avoid conflicts.
+This is a Docker limitation at this time.
+Please note that all images not produced in `outputs` (see below) are considered internal implementation details, subject to change, and **should never be deployed**.
+
+The current parallel build implementation uses `docker buildx` with very specific `--cache-from` flags to encourage layer reuse.
+Note that this is considered an internal implementation detail, and is subject to change during a minor and/or point release.
+However such a change is unlikely and will be documented.
+
+If you have explicly set `DOCKER_BUILDKIT=1` or `DOCKER_BUILDKIT=0`, it will override the input setting.
+Use of this is **not recommended**.
 
 ## Outputs
 
@@ -106,7 +123,4 @@ tl:dr: If it comes from one of the `outputs` of this action, go ahead and use it
 
 ## Known issues/Future features
 
-- Use with Docker Buildkit (via `DOCKER_BUILDKIT=1`) does not consistently use the layer caches.
-  This seems to be a Buildkit issue.
-  It's recommended to leave Buildkit disabled at this time.
 - Make a straightforward mechanism to do cleanup

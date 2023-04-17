@@ -10803,18 +10803,31 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.time = exports.runDockerCommand = exports.getTaggedImageForStage = exports.getAllStages = exports.getBuildArgs = exports.getBaseStages = exports.getFullCommitHash = exports.isDefaultBranch = exports.getTagForRun = void 0;
+exports.time = exports.runDockerCommand = exports.getTaggedImageForStage = exports.getAllStages = exports.getBuildArgs = exports.getBaseStages = exports.getFullCommitHash = exports.isDefaultBranch = exports.shouldBuildInParallel = exports.getTagForRun = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const github = __importStar(__nccwpck_require__(5438));
 // Returns a string like "refs_pull_1_merge-bk1"
 function getTagForRun() {
     var _a;
-    const usingBuildkit = process.env.DOCKER_BUILDKIT === '1';
+    const parallel = shouldBuildInParallel();
     const tagFriendlyRef = (_a = process.env.GITHUB_REF) === null || _a === void 0 ? void 0 : _a.replace(/\//g, '_');
-    return `${tagFriendlyRef}-bk${usingBuildkit ? '1' : '0'}`;
+    return `${tagFriendlyRef}-bk${parallel ? '1' : '0'}`;
 }
 exports.getTagForRun = getTagForRun;
+function shouldBuildInParallel() {
+    // Respect DOCKER_BUILDKIT, if set.
+    if (process.env.DOCKER_BUILDKIT === '1') {
+        core.debug('Building in parallel due to DOCKER_BUILDKIT=1');
+        return true;
+    }
+    else if (process.env.DOCKER_BUILDKIT === '0') {
+        core.debug('Not building in parallel due to DOCKER_BUILDKIT=0');
+        return false;
+    }
+    return core.getBooleanInput('parallel');
+}
+exports.shouldBuildInParallel = shouldBuildInParallel;
 function isDefaultBranch() {
     var _a;
     const defaultBranch = (_a = github.context.payload.repository) === null || _a === void 0 ? void 0 : _a.default_branch;
@@ -10888,10 +10901,14 @@ exports.getTaggedImageForStage = getTaggedImageForStage;
  */
 async function runDockerCommand(command, ...args) {
     const rest = [command];
+    if (command === 'build' && shouldBuildInParallel()) {
+        rest.unshift('buildx');
+    }
     if (core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
     rest.push(...args);
+    core.info(JSON.stringify(rest));
     let stdout = '';
     let stderr = '';
     const execOptions = {
@@ -11053,16 +11070,21 @@ async function build() {
 async function buildStage(stage, extraTags) {
     return (0, helpers_1.time)(`Build ${stage}`, async () => {
         core.startGroup(`Building stage: ${stage}`);
+        const useBuildx = (0, helpers_1.shouldBuildInParallel)();
         const dockerfile = core.getInput('dockerfile');
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
         const cacheFromArg = getAllPossibleCacheTargets()
-            .flatMap(target => ['--cache-from', target]);
+            .flatMap(target => ['--cache-from', useBuildx
+                ? `type=registry,ref=${target}`
+                : target
+        ]);
         const buildArgs = (0, helpers_1.getBuildArgs)()
             .flatMap(arg => ['--build-arg', arg]);
-        const result = await (0, helpers_1.runDockerCommand)('build', 
-        // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
-        ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
+        if (useBuildx) {
+            buildArgs.push('--build-arg', 'BUILDKIT_INLINE_CACHE=1');
+        }
+        const result = await (0, helpers_1.runDockerCommand)('build', ...buildArgs, ...cacheFromArg, ...dockerfileArg, '--tag', targetTag, '--target', stage, core.getInput('context'));
         if (result.exitCode > 0) {
             throw new Error('Docker build failed');
         }

@@ -9,6 +9,7 @@ import {
   getAllStages,
   getTaggedImageForStage,
   runDockerCommand,
+  shouldBuildInParallel,
   time,
 } from './helpers'
 
@@ -97,20 +98,27 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
   return time(`Build ${stage}`, async () => {
     core.startGroup(`Building stage: ${stage}`)
 
+    const useBuildx = shouldBuildInParallel()
+
     const dockerfile = core.getInput('dockerfile')
     const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile]
 
     const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
     const cacheFromArg = getAllPossibleCacheTargets()
-      .flatMap(target => ['--cache-from', target])
+      .flatMap(target => ['--cache-from', useBuildx
+        ? `type=registry,ref=${target}`
+        : target
+      ])
 
     const buildArgs = getBuildArgs()
       .flatMap(arg => ['--build-arg', arg])
+    if (useBuildx) {
+      buildArgs.push('--build-arg', 'BUILDKIT_INLINE_CACHE=1')
+    }
 
     const result = await runDockerCommand(
       'build',
-      // '--build-arg', 'BUILDKIT_INLINE_CACHE="1"',
       ...buildArgs,
       ...cacheFromArg,
       ...dockerfileArg,

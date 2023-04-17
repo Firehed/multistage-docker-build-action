@@ -13,6 +13,62 @@ permissions:
   packages: write
 
 jobs:
+  test-build-parallel-setting:
+    name: Parallel via setting
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        parallel: [true, false]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Auth to GH registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: generate file change
+        run: echo $GITHUB_SHA > file.txt
+
+      - uses: ./
+        id: build
+        with:
+          build-args: BUILD_ARG_1=hello
+          dockerfile: examples/Dockerfile
+          repository: ghcr.io/firehed/actions
+          parallel: ${{ matrix.parallel }}
+          server-stage: server
+          quiet: false
+
+  test-build-parallel-buildkit:
+    name: Parallel via DOCKER_BUILDKIT
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Auth to GH registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: generate file change
+        run: echo $GITHUB_SHA > file.txt
+
+      - uses: ./
+        id: build
+        with:
+          build-args: BUILD_ARG_1=hello
+          dockerfile: examples/Dockerfile
+          repository: ghcr.io/firehed/actions
+          server-stage: server
+          quiet: false
+
   build:
     name: Build docker images
     runs-on: ubuntu-latest
