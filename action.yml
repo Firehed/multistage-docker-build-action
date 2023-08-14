@@ -34,6 +34,10 @@ inputs:
     default: true
     description: Automatically create a "latest" tag when the action is run on the default branch (defaults to `true`)
     required: false
+  custom-tag:
+    default: ''
+    required: false
+    description: A user-defined tag to apply to successfully built and pushed images
   testenv-stage:
     required: false
     description: Docker target for testing

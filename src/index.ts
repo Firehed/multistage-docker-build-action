@@ -72,6 +72,11 @@ async function build(): Promise<void> {
   if (isDefaultBranch() && core.getBooleanInput('tag-latest-on-default')) {
     extraTags.push('latest')
   }
+  
+  const customTag = core.getInput('custom-tag')
+  if (customTag !== '') {
+    extraTags.push(customTag)
+  }
 
   // Build test env if the stage is specified
   const testStage = core.getInput('testenv-stage').trim()
