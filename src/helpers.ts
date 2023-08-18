@@ -83,8 +83,23 @@ export function getAllStages(): string[] {
  * Takes the build stage and returns an untagged image name for it
  */
 function getUntaggedImageForStage(stage: string): string {
-  const repo = core.getInput('repository')
-  return `${repo}/${stage}`
+  const reg = core.getInput('registry')
+  let repo = core.getInput('repository')
+
+  if (repo === '') {
+    repo = github.context.repo.owner + '/' + github.context.repo.repo
+  }
+
+  // Attempt to detect misconfiguration
+
+  // WIP
+  if (reg !== '' && repo === '') {
+  //   throw new Error('Registry and repository must not both be bla
+  }
+
+
+
+  return `${reg}/${repo}/${stage}`
 }
 
 export function getTaggedImageForStage(stage: string, tag: string): string {
