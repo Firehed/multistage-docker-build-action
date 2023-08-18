@@ -10890,7 +10890,7 @@ function getUntaggedImageForStage(stage) {
     const reg = core.getInput('registry');
     let repo = core.getInput('repository');
     if (repo === '') {
-        repo = github.context.repo.owner + '/' + github.context.repo.repo;
+        repo = (github.context.repo.owner + '/' + github.context.repo.repo).toLowerCase();
     }
     // Attempt to detect misconfiguration
     // WIP

@@ -87,7 +87,7 @@ function getUntaggedImageForStage(stage: string): string {
   let repo = core.getInput('repository')
 
   if (repo === '') {
-    repo = github.context.repo.owner + '/' + github.context.repo.repo
+    repo = (github.context.repo.owner + '/' + github.context.repo.repo).toLowerCase()
   }
 
   // Attempt to detect misconfiguration
