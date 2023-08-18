@@ -21,8 +21,11 @@ inputs:
     description: Build in parallel
     required: false
     default: false
+  registry:
+    required: false
+    description: Registry to pull from and push to. Can be provided through `repository`
   repository:
-    required: true
+    required: false
     description: Repository that all of the images and tags will pull from and push to
   stages:
     required: true

@@ -83,8 +83,29 @@ export function getAllStages(): string[] {
  * Takes the build stage and returns an untagged image name for it
  */
 function getUntaggedImageForStage(stage: string): string {
-  const repo = core.getInput('repository')
-  return `${repo}/${stage}`
+  const reg = core.getInput('registry')
+  let repo = core.getInput('repository')
+
+  if (reg === '' && repo === '') {
+    // Technically, this should be permissible. In practice, the default
+    // `docker push` going to Docker Hub when a registry isn't specified will
+    // break - so it's forbidden.
+    throw new Error('Registry and repository must not both be blank')
+  }
+
+  if (reg !== '' && repo !== '') {
+    // This is a temporary limitation - I'm not sure exactly what behavior is
+    // most desirable here. The main use-case of `registry` is to leave out
+    // `repository` so for now we're optimizing for that.
+    throw new Error('Use registry OR repository, but not both')
+  }
+
+  if (repo === '') {
+    repo = (github.context.repo.owner + '/' + github.context.repo.repo).toLowerCase()
+    return `${reg}/${repo}/${stage}`
+  } else {
+    return `${repo}/${stage}`
+  }
 }
 
 export function getTaggedImageForStage(stage: string, tag: string): string {

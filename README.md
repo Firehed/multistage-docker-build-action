@@ -16,16 +16,27 @@ While the action allows many stages to be pushed to the registry for future re-u
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `repository` | **yes** | | Repository name for pushed images |
-| `stages` | **yes** | | Comma-separarted list of build stages. Each of these will be an explicit cache target for subsequent builds |
 | `server-stage` | **yes** | | Name of stage for server |
-| `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
-| `testenv-stage` | no | | Name of stage for test environment |
+| `stages` | **yes** | | Comma-separarted list of build stages. Each of these will be an explicit cache target for subsequent builds |
+| `build-args` | no | | Comma-separated list of `--build-arg` flags. |
 | `context` | no | `.` | Build context |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
-| `quiet` | no | `true` | Should docker commands be passed `--quiet` |
 | `parallel` | no | `false` | Should stages be built in parallel (via BuildX) |
-| `build-args` | no | | Comma-separated list of `--build-arg` flags. |
+| `quiet` | no | `true` | Should docker commands be passed `--quiet` |
+| `repository` | no[^1] | | Repository name for pushed images |
+| `registry` | no[^1] | | Docker registry for automatically-named images |
+| `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
+| `testenv-stage` | no | | Name of stage for test environment |
+
+### `registry` and `repository`
+In versions `v1.7.x` and earlier, the `repository` input is used to control where the built images go.
+It should include the registry in the value (e.g. `ghcr.io`, `gcr.io`, etc.).
+
+As of `v1.8`, you can leave `repository` blank and instead provide only the `registry`.
+If you do so, the Github repository name will be used to produce the outputs.
+
+You **must** set either value, but not both.
+This limitation may be removed in a future version.
 
 ### Parallel builds
 The new `parallel` option, added in `v1.7`, defaults to off.
@@ -124,3 +135,5 @@ tl:dr: If it comes from one of the `outputs` of this action, go ahead and use it
 ## Known issues/Future features
 
 - Make a straightforward mechanism to do cleanup
+
+[^1]: You must provide either of these values, but do not provide both.
