@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   test-build-auto-repo:
-    name: Test automatic repository naming
+    name: Automatic repository naming
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -42,9 +42,6 @@ jobs:
 
       - name: Run image
         run: docker run --rm ${{ steps.build.outputs.server-tag }}
-
-
-
 
 
   test-build-parallel-setting:
