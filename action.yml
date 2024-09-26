@@ -40,7 +40,7 @@ inputs:
   quiet:
     required: false
     default: true
-    description: Send `--quiet` flag to docker commands
+    description: Send `--quiet` flag to docker commands. Always false when running in debug mode.
 
 outputs:
   commit:

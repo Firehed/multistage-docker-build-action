@@ -23,7 +23,7 @@ While the action allows many stages to be pushed to the registry for future re-u
 | `testenv-stage` | no | | Name of stage for test environment |
 | `context` | no | `.` | Build context |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
-| `quiet` | no | `true` | Should docker commands be passed `--quiet` |
+| `quiet` | no | `true` | Should docker commands be passed `--quiet` (this will always be `false` when running an action with debug logging enabled) |
 | `parallel` | no | `false` | Should stages be built in parallel (via BuildX) |
 | `build-args` | no | | Comma-separated list of `--build-arg` flags. |
 
