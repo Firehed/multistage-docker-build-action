@@ -10904,7 +10904,7 @@ async function runDockerCommand(command, ...args) {
     if (command === 'build' && shouldBuildInParallel()) {
         rest.unshift('buildx');
     }
-    if (core.getBooleanInput('quiet') && command !== 'tag') {
+    if (!core.isDebug() && core.getBooleanInput('quiet') && command !== 'tag') {
         rest.push('--quiet');
     }
     rest.push(...args);
