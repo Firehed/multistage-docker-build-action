@@ -20,7 +20,7 @@ jobs:
       matrix:
         parallel: [true, false]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -48,7 +48,7 @@ jobs:
     env:
       DOCKER_BUILDKIT: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -82,7 +82,7 @@ jobs:
       testenv-tag: ${{ steps.build.outputs.testenv-tag }}
       server-tag: ${{ steps.build.outputs.server-tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -142,7 +142,7 @@ jobs:
     name: Build server image only
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -172,7 +172,7 @@ jobs:
     name: Override context
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -203,7 +203,7 @@ jobs:
     name: Override context and file
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -235,7 +235,7 @@ jobs:
     name: Action should fail if docker build fails
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Auth to GH registry
         uses: docker/login-action@v3
@@ -262,7 +262,7 @@ jobs:
     name: Action should fail if docker push fails
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Do not log in to docker registry. This will cause the push to fail
 
