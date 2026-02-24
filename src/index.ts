@@ -13,6 +13,9 @@ import {
   time,
 } from './helpers'
 
+// Tracks images that were successfully pulled or built and are available for caching
+const availableCacheImages = new Set<string>()
+
 async function run(): Promise<void> {
   try {
     await time('Pull images', () =>
@@ -34,6 +37,7 @@ async function run(): Promise<void> {
  * Pre-pull all of the images ahead of the build process so they can be used
  * for layer caching. Tries multiple tags per stage, preferring this branch/ref
  * when available. Pulls all stages in parallel for faster execution.
+ * Successfully pulled images are tracked in availableCacheImages.
  */
 async function pull(): Promise<void> {
   const tagsToTry = [getTagForRun(), 'latest']
@@ -43,6 +47,7 @@ async function pull(): Promise<void> {
       const taggedName = getTaggedImageForStage(stage, tag)
       const ret = await runDockerCommand('pull', taggedName)
       if (ret.exitCode === 0) {
+        availableCacheImages.add(taggedName)
         // Do not try other tags for this stage
         break
       }
@@ -105,7 +110,8 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
 
     const targetTag = getTaggedImageForStage(stage, getTagForRun())
 
-    const cacheFromArg = getAllPossibleCacheTargets()
+    // Only use cache sources that are actually available (successfully pulled or built)
+    const cacheFromArg = Array.from(availableCacheImages)
       .flatMap(target => ['--cache-from', useBuildx
         ? `type=registry,ref=${target}`
         : target
@@ -130,6 +136,8 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
       throw new Error('Docker build failed')
     }
     await dockerPush(targetTag)
+    // Make this image available as a cache source for subsequent builds
+    availableCacheImages.add(targetTag)
 
     for (const extraTag of extraTags) {
       await addTagAndPush(targetTag, stage, extraTag)
@@ -161,13 +169,6 @@ async function addTagAndPush(image: string, stage: string, tag: string): Promise
   }
   await dockerPush(name)
   return name
-}
-
-function getAllPossibleCacheTargets(): string[] {
-  const tags = [getTagForRun(), 'latest']
-  const stages = getAllStages()
-
-  return stages.flatMap((stage) => tags.map((tag) => getTaggedImageForStage(stage, tag)))
 }
 
 run() // eslint-disable-line
