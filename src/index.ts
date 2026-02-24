@@ -33,12 +33,12 @@ async function run(): Promise<void> {
 /**
  * Pre-pull all of the images ahead of the build process so they can be used
  * for layer caching. Tries multiple tags per stage, preferring this branch/ref
- * when available.
+ * when available. Pulls all stages in parallel for faster execution.
  */
 async function pull(): Promise<void> {
   const tagsToTry = [getTagForRun(), 'latest']
 
-  for (const stage of getAllStages()) {
+  await Promise.all(getAllStages().map(async (stage) => {
     for (const tag of tagsToTry) {
       const taggedName = getTaggedImageForStage(stage, tag)
       const ret = await runDockerCommand('pull', taggedName)
@@ -48,7 +48,7 @@ async function pull(): Promise<void> {
       }
       // keep trying other tags for this stage
     }
-  }
+  }))
 }
 
 /**
