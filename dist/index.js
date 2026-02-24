@@ -11012,11 +11012,11 @@ async function run() {
 /**
  * Pre-pull all of the images ahead of the build process so they can be used
  * for layer caching. Tries multiple tags per stage, preferring this branch/ref
- * when available.
+ * when available. Pulls all stages in parallel for faster execution.
  */
 async function pull() {
     const tagsToTry = [(0, helpers_1.getTagForRun)(), 'latest'];
-    for (const stage of (0, helpers_1.getAllStages)()) {
+    await Promise.all((0, helpers_1.getAllStages)().map(async (stage) => {
         for (const tag of tagsToTry) {
             const taggedName = (0, helpers_1.getTaggedImageForStage)(stage, tag);
             const ret = await (0, helpers_1.runDockerCommand)('pull', taggedName);
@@ -11026,7 +11026,7 @@ async function pull() {
             }
             // keep trying other tags for this stage
         }
-    }
+    }));
 }
 /**
  * Builds to all of the stages specified by the action's inputs, using the
