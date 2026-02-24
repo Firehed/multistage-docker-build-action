@@ -10992,6 +10992,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const helpers_1 = __nccwpck_require__(3015);
+// Tracks images that were successfully pulled or built and are available for caching
+const availableCacheImages = new Set();
 async function run() {
     try {
         await (0, helpers_1.time)('Pull images', () => core.group('Pull images for layer cache', pull));
@@ -11013,6 +11015,7 @@ async function run() {
  * Pre-pull all of the images ahead of the build process so they can be used
  * for layer caching. Tries multiple tags per stage, preferring this branch/ref
  * when available. Pulls all stages in parallel for faster execution.
+ * Successfully pulled images are tracked in availableCacheImages.
  */
 async function pull() {
     const tagsToTry = [(0, helpers_1.getTagForRun)(), 'latest'];
@@ -11021,6 +11024,7 @@ async function pull() {
             const taggedName = (0, helpers_1.getTaggedImageForStage)(stage, tag);
             const ret = await (0, helpers_1.runDockerCommand)('pull', taggedName);
             if (ret.exitCode === 0) {
+                availableCacheImages.add(taggedName);
                 // Do not try other tags for this stage
                 break;
             }
@@ -11074,7 +11078,8 @@ async function buildStage(stage, extraTags) {
         const dockerfile = core.getInput('dockerfile');
         const dockerfileArg = (dockerfile === '') ? [] : ['--file', dockerfile];
         const targetTag = (0, helpers_1.getTaggedImageForStage)(stage, (0, helpers_1.getTagForRun)());
-        const cacheFromArg = getAllPossibleCacheTargets()
+        // Only use cache sources that are actually available (successfully pulled or built)
+        const cacheFromArg = Array.from(availableCacheImages)
             .flatMap(target => ['--cache-from', useBuildx
                 ? `type=registry,ref=${target}`
                 : target
@@ -11089,6 +11094,8 @@ async function buildStage(stage, extraTags) {
             throw new Error('Docker build failed');
         }
         await dockerPush(targetTag);
+        // Make this image available as a cache source for subsequent builds
+        availableCacheImages.add(targetTag);
         for (const extraTag of extraTags) {
             await addTagAndPush(targetTag, stage, extraTag);
         }
@@ -11114,11 +11121,6 @@ async function addTagAndPush(image, stage, tag) {
     }
     await dockerPush(name);
     return name;
-}
-function getAllPossibleCacheTargets() {
-    const tags = [(0, helpers_1.getTagForRun)(), 'latest'];
-    const stages = (0, helpers_1.getAllStages)();
-    return stages.flatMap((stage) => tags.map((tag) => (0, helpers_1.getTaggedImageForStage)(stage, tag)));
 }
 run(); // eslint-disable-line
 
