@@ -39,6 +39,6 @@ run() {
     fi
 }
 
-run git tag -fa "$MAJOR" -m "Update $MAJOR to $TAG"
-run git tag -fa "$MINOR" -m "Update $MINOR to $TAG"
-run git push -f origin "$MAJOR" "$MINOR"
+run git tag --force --annotate "$MAJOR" --message "Update $MAJOR to $TAG"
+run git tag --force --annotate "$MINOR" --message "Update $MINOR to $TAG"
+run git push --force origin "$MAJOR" "$MINOR"
