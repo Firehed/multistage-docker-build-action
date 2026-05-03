@@ -1,9 +1,8 @@
 name: Update version tags
 
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
@@ -23,6 +22,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.event.release.tag_name }}
 
       - name: Configure git
         run: |
@@ -34,8 +35,11 @@ jobs:
         run: |
           if [[ -n "${{ inputs.tag }}" ]]; then
             echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          elif [[ -n "${{ github.event.release.tag_name }}" ]]; then
+            echo "value=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
           else
-            echo "value=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+            echo "::error::Could not determine tag"
+            exit 1
           fi
 
       - name: Update major and minor version tags
