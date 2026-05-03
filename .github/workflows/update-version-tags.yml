@@ -1,0 +1,47 @@
+name: Update version tags
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to update (e.g., v1.2.3)'
+        required: true
+        type: string
+      dry-run:
+        description: 'Print commands without executing'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  update-tags:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [[ -n "${{ inputs.tag }}" ]]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update major and minor version tags
+        run: |
+          ARGS="${{ steps.tag.outputs.value }}"
+          if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          ./scripts/update-version-tags.sh $ARGS
