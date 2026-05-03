@@ -124,6 +124,8 @@ jobs:
         id: build-args
         run: docker run
             --rm
+            -v "$GITHUB_OUTPUT:$GITHUB_OUTPUT"
+            -e "GITHUB_OUTPUT=$GITHUB_OUTPUT"
             ${{ needs.build.outputs.testenv-tag }}
             sh examples/print-outputs.sh
 
