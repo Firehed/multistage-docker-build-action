@@ -11096,9 +11096,9 @@ async function buildStage(stage, extraTags) {
         await dockerPush(targetTag);
         // Make this image available as a cache source for subsequent builds
         availableCacheImages.add(targetTag);
-        for (const extraTag of extraTags) {
-            await addTagAndPush(targetTag, stage, extraTag);
-        }
+        // Create all local tags first, then push in parallel
+        const extraTaggedImages = await Promise.all(extraTags.map(tag => addTag(targetTag, stage, tag)));
+        await Promise.all(extraTaggedImages.map(dockerPush));
         core.endGroup();
         return targetTag;
     });
@@ -11111,15 +11111,14 @@ async function dockerPush(taggedImage) {
     }
 }
 /**
- * Returns the created tagged image name
+ * Creates a local tag for the image. Returns the new tagged image name.
  */
-async function addTagAndPush(image, stage, tag) {
+async function addTag(image, stage, tag) {
     const name = (0, helpers_1.getTaggedImageForStage)(stage, tag);
     const tagResult = await (0, helpers_1.runDockerCommand)('tag', image, name);
     if (tagResult.exitCode > 0) {
         throw new Error('Docker tag failed');
     }
-    await dockerPush(name);
     return name;
 }
 run(); // eslint-disable-line

@@ -139,9 +139,12 @@ async function buildStage(stage: string, extraTags: string[]): Promise<string> {
     // Make this image available as a cache source for subsequent builds
     availableCacheImages.add(targetTag)
 
-    for (const extraTag of extraTags) {
-      await addTagAndPush(targetTag, stage, extraTag)
-    }
+    // Create all local tags first, then push in parallel
+    const extraTaggedImages = await Promise.all(
+      extraTags.map(tag => addTag(targetTag, stage, tag))
+    )
+    await Promise.all(extraTaggedImages.map(dockerPush))
+
     core.endGroup()
     return targetTag
   })
@@ -159,15 +162,14 @@ async function dockerPush(taggedImage: string): Promise<void> {
 }
 
 /**
- * Returns the created tagged image name
+ * Creates a local tag for the image. Returns the new tagged image name.
  */
-async function addTagAndPush(image: string, stage: string, tag: string): Promise<string> {
+async function addTag(image: string, stage: string, tag: string): Promise<string> {
   const name = getTaggedImageForStage(stage, tag)
   const tagResult = await runDockerCommand('tag', image, name)
   if (tagResult.exitCode > 0) {
     throw new Error('Docker tag failed')
   }
-  await dockerPush(name)
   return name
 }
 
