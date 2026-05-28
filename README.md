@@ -20,6 +20,7 @@ While the action allows many stages to be pushed to the registry for future re-u
 | `stages` | **yes** | | Comma-separarted list of build stages. Each of these will be an explicit cache target for subsequent builds |
 | `server-stage` | **yes** | | Name of stage for server |
 | `tag-latest-on-default` | no | `true` | Automatically create a `latest` tag when run on the default branch |
+| `custom-tag` | no | ` ` | A user-defined tag to apply to successfully built and pushed images |
 | `testenv-stage` | no | | Name of stage for test environment |
 | `context` | no | `.` | Build context |
 | `dockerfile` | no | `Dockerfile` | Path to the Dockerfile |
