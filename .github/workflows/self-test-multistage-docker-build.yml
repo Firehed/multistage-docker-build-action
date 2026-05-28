@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
 
 # Help Dependabot checks run
 permissions:
@@ -101,7 +102,7 @@ jobs:
           dockerfile: examples/Dockerfile
           # repository: firehed/actions
           # repository: gcr.io/firehed/actions
-          repository: ghcr.io/firehed/actions
+          repository: ghcr.io/${{ github.repository_owner }}/actions
           stages: env, configured
           testenv-stage: testenv
           server-stage: server
@@ -157,7 +158,7 @@ jobs:
         id: build
         with:
           dockerfile: examples/Dockerfile
-          repository: ghcr.io/firehed/actions
+          repository: ghcr.io/${{ github.repository_owner }}/actions
           stages: env, configured
           server-stage: server
 
@@ -188,7 +189,7 @@ jobs:
         id: build
         with:
           context: examples
-          repository: ghcr.io/firehed/actions
+          repository: ghcr.io/${{ github.repository_owner }}/actions
           stages: env, configured
           server-stage: server
 
@@ -220,7 +221,7 @@ jobs:
         with:
           context: examples
           dockerfile: examples/Dockerfile
-          repository: ghcr.io/firehed/actions
+          repository: ghcr.io/${{ github.repository_owner }}/actions
           stages: env, configured
           server-stage: server
 
@@ -253,7 +254,7 @@ jobs:
         with:
           # No context/dockerfile
           server-stage: server
-          repository: ghcr.io/firehed/actions
+          repository: ghcr.io/${{ github.repository_owner }}/actions
 
       - name: expect failure
         if: steps.build.outcome == 'success'
@@ -274,7 +275,7 @@ jobs:
         id: build
         with:
           context: examples
-          repository: ghcr.io/firehed/actions
+          repository: ghcr.io/${{ github.repository_owner }}/actions
           stages: env, configured
           server-stage: server
 
